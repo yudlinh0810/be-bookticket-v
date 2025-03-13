@@ -36,7 +36,6 @@ export const updateLocationControl = async (req: Request, res: Response) => {
 };
 
 export const deleteLocationControl = async (req: Request, res: Response) => {
-  console.log("params", req.params);
   const id = Number(req.params.id);
   if (!id) return errorResponse(res, "id location null!.", 404);
   try {

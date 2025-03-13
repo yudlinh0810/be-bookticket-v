@@ -1,9 +1,14 @@
-import express, { Request, Response, NextFunction } from "express";
-import LocationRouter from "./location.route";
+import express, { NextFunction, Request, Response } from "express";
+import { errorHandler } from "../middlewares/error.middleware";
+import carRouter from "./car.route";
+import customerRouter from "./customer.route";
+import locationRouter from "./location.route";
 
 const routes = (app: express.Application): void => {
   // Cấu hình routes
-  app.use("/api/location", LocationRouter);
+  app.use("/api/location", locationRouter);
+  app.use("/api/customer", customerRouter);
+  app.use("/api/car", carRouter);
 
   // Route cho các yêu cầu không tìm thấy
   app.use((req: Request, res: Response): void => {
@@ -14,13 +19,7 @@ const routes = (app: express.Application): void => {
   });
 
   // Route xử lý lỗi
-  app.use((err: any, req: Request, res: Response, next: NextFunction): void => {
-    console.log("Err route", err.stack);
-    res.status(500).json({
-      status: "Err",
-      message: "Internal Server Error!",
-    });
-  });
+  app.use(errorHandler);
 };
 
 export default routes;

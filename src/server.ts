@@ -7,6 +7,8 @@ import { errorHandler } from "./middlewares/error.middleware"; // Import middlew
 import { config } from "./config/config";
 import initSocket from "./socket";
 import { createServer } from "http";
+import session from "express-session";
+import passport from "passport";
 
 dotenv.config();
 
@@ -16,11 +18,25 @@ const server = createServer(app);
 // Middleware cấu hình CORS
 app.use(
   cors({
-    origin: [process.env.URL_LOCALHOST, process.env.URL_FRONTEND],
+    origin: ["http://localhost:5173", process.env.URL_LOCALHOST, process.env.URL_FRONTEND],
+    // origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
 );
+
+// Cấu hình session
+app.use(
+  session({
+    secret: "your_secret_key",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+// Middleware Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Xử lý request body với dữ liệu JSON
 app.use(express.json({ limit: "50mb" }));
@@ -41,9 +57,6 @@ app.get("/", (_, res) => {
 
 // Gọi routes
 routes(app);
-
-// Middleware xử lý lỗi
-app.use(errorHandler);
 
 // Start server
 const port = config.PORT || 3003;

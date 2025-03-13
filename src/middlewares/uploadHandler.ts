@@ -6,21 +6,40 @@ import { getCloudinaryFolder } from "../utils/getCloudinaryFolder.util";
 import { validateFile } from "../utils/validateFile.util";
 import { UploadApiResponse } from "cloudinary";
 
-interface CloudinaryFile {
+export interface CloudinaryAsset {
+  asset_id?: string;
   public_id: string;
-  url: string;
+  version?: number;
+  version_id?: string;
+  signature?: string;
+  width?: number;
+  height?: number;
+  format?: string;
+  resource_type?: string;
+  created_at?: string;
+  tags?: string[];
+  bytes?: number;
+  type?: string;
+  etag?: string;
+  placeholder?: boolean;
+  url?: string;
+  secure_url: string;
+  asset_folder?: string;
+  display_name?: string;
+  original_filename?: string;
 }
 
 interface RequestWithFile extends Request {
-  file?: Express.Multer.File & { cloudinaryFile?: CloudinaryFile };
+  file?: Express.Multer.File & { cloudinaryFile?: CloudinaryAsset };
 }
 
-interface UploadedFile extends Express.Multer.File {
-  cloudinaryImages?: { public_id: string; url: string }[];
+export interface UploadedFile extends Express.Multer.File {
+  cloudinaryImages?: CloudinaryAsset[];
 }
 
-interface RequestWithFiles extends Request {
-  files?: UploadedFile[];
+export interface RequestWithProcessedFiles extends Request {
+  processedFiles: UploadedFile[];
+  processedFile: CloudinaryAsset;
 }
 
 const uploadVideoToCloudinary = async (req: RequestWithFile, res: Response, next: NextFunction) => {
@@ -58,7 +77,7 @@ const uploadVideoToCloudinary = async (req: RequestWithFile, res: Response, next
     // Assign data to req
     req.file.cloudinaryFile = {
       public_id: uploadResult.public_id,
-      url: uploadResult.secure_url,
+      secure_url: uploadResult.secure_url,
     };
 
     next();
@@ -68,61 +87,90 @@ const uploadVideoToCloudinary = async (req: RequestWithFile, res: Response, next
   }
 };
 
-const uploadImageToCloudinary = async (
-  req: RequestWithFiles,
+const uploadImagesToCloudinary = async (
+  req: RequestWithProcessedFiles,
   res: Response,
   next: NextFunction
 ) => {
-  console.log("data", req.body);
   try {
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ message: "No file uploaded" });
+      return next();
     }
-
+    let files = req.files as Express.Multer.File[];
     let bodyData;
     try {
       bodyData = JSON.parse(req.body?.data || "{}");
+      if (!bodyData.email) return next("Email is required");
     } catch (error) {
-      return res.status(400).json({ message: "Invalid JSON data format" });
+      return next("Invalid JSON data format");
     }
 
-    const { id, role, public_img_ids } = bodyData;
-    if (!id) return res.status(400).json({ message: "Missing user id" });
+    const { role } = bodyData;
 
-    const folder = getCloudinaryFolder(id, role);
-    if (!folder) return res.status(400).json({ message: "The user does not exist" });
+    if (!role) {
+      return next("Missing role");
+    }
 
-    const uploadImages: { public_id: string; url: string }[] = [];
+    const folder = getCloudinaryFolder(role);
+    if (!folder) {
+      return next("The user does not exist");
+    }
+
+    const uploadImages: CloudinaryAsset[] = [];
     const allowedFormats = ["png", "jpg", "jpeg"];
 
     // Upload all images
-    await Promise.all(
-      req.files.map(async (file) => {
-        if (!validateFile(file.originalname, "image")) {
-          throw new Error(
-            `Invalid file format: ${file.originalname}, Only jpg, png, jpeg are allowed.`
+    if (files.length > 1) {
+      await Promise.all(
+        files.map(async (file) => {
+          if (!validateFile(file.originalname, "image")) {
+            throw new Error(
+              `Invalid file format: ${file.originalname}, Only jpg, png, jpeg are allowed.`
+            );
+          }
+
+          const result: UploadApiResponse = await uploadToCloudinary(
+            file.buffer,
+            folder,
+            allowedFormats,
+            "image"
           );
-        }
-
-        const result: UploadApiResponse = await uploadToCloudinary(
-          file.buffer,
-          folder,
-          allowedFormats,
-          "image"
+          uploadImages.push(result);
+        })
+      );
+    } else {
+      if (!validateFile(files[0].originalname, "image")) {
+        throw new Error(
+          `Invalid file format: ${files[0].originalname}, Only jpg, png, jpeg are allowed.`
         );
-        uploadImages.push({ public_id: result.public_id, url: result.secure_url });
-      })
-    );
+      }
+      const result: UploadApiResponse = await uploadToCloudinary(
+        files[0].buffer,
+        folder,
+        allowedFormats,
+        "image"
+      );
 
-    // Delete old images (if any)
-    if (public_img_ids && Array.isArray(public_img_ids)) {
-      await Promise.all(public_img_ids.map((public_id) => deleteOldFile(public_id, "image")));
+      if (bodyData.urlPublicImg) {
+        await deleteOldFile(bodyData.urlPublicImg, "image");
+      }
+      req.processedFile = result;
+      return next();
     }
 
-    req.files.forEach((file, index) => {
-      console.log(`req.files[${index}: ${uploadImages}]`);
-      file.cloudinaryImages = uploadImages;
-    });
+    // Delete old images (if any)
+    // if (public_img_ids && Array.isArray(public_img_ids)) {
+    //   await Promise.all(public_img_ids.map((public_id) => deleteOldFile(public_id, "image")));
+    // }
+
+    // req.processedFiles.forEach((file, index) => {
+    //   console.log(`req.files[${index}]: ${uploadImages[index]};`);
+    //   file.cloudinaryImages = [uploadImages[index]];
+    // });
+
+    req.processedFiles = uploadImages.map((image) => ({
+      cloudinaryImages: [image],
+    })) as UploadedFile[];
 
     next();
   } catch (error) {
@@ -131,4 +179,4 @@ const uploadImageToCloudinary = async (
   }
 };
 
-export { uploadImages, uploadImageToCloudinary, uploadVideo, uploadVideoToCloudinary };
+export { uploadImages, uploadImagesToCloudinary, uploadVideo, uploadVideoToCloudinary };
