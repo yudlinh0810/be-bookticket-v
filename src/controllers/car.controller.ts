@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 import {
-  createCarSer,
+  addCarSer,
+  addImgCar,
   deleteCarSer,
+  deleteImgCarSer,
   getAllCarSer,
   getCarByIdSer,
   getCarByLicensePlateSer,
@@ -9,31 +11,31 @@ import {
   getCarByTypeAndStatusSer,
   getCarByTypeSer,
   updateCarSer,
+  updateImgCarSer,
 } from "../services/car.service";
 import { errorResponse, successResponse } from "../utils/response.util";
-import { CarData, CarStatus, CarType, RequestWithCar, statusMap, typeMap } from "../types/car.type";
+import { CarRequest, RequestWithCar, statusMap, typeMap } from "../@types/car.type";
 import { decode } from "punycode";
+import { CloudinaryAsset } from "../@types/cloudinary";
+import { RequestFile, RequestWithProcessedFiles } from "../middlewares/uploadHandler";
 
-export const createCarCTL = async (req: Request, res: Response): Promise<any> => {
-  const data: CarData = req.body;
-  console.log("data", data);
-
+export const addCarCTL = async (req: RequestWithProcessedFiles, res: Response): Promise<any> => {
+  const data = JSON.parse(req.body.data);
+  const resultCloudinary = req.processedFiles;
   try {
-    const result = await createCarSer(data);
-    return successResponse(res, result, "Car created successfully");
+    const result = await addCarSer(data, resultCloudinary);
+    return successResponse(res, result, "Car create successfully");
   } catch (error) {
     return errorResponse(res, error.message, 500);
   }
 };
 
-export const updateCarCTL = async (req: Request, res: Response): Promise<any> => {
-  const id = Number(req.params.id);
-  const data: CarData = req.body;
-  console.log("id", id);
-  console.log("data", data);
+export const updateCarCTL = async (req: RequestWithProcessedFiles, res: Response): Promise<any> => {
+  const data = JSON.parse(req.body.data);
+  const resultCloudinary = req.processedFiles;
   try {
-    const result = await updateCarSer(id, data);
-    return successResponse(res, result, "Car updated successfully");
+    const result = await updateCarSer(data, resultCloudinary);
+    return successResponse(res, result, "Car update successfully");
   } catch (error) {
     return errorResponse(res, error, 500);
   }
@@ -42,9 +44,8 @@ export const updateCarCTL = async (req: Request, res: Response): Promise<any> =>
 export const deleteCarCTL = async (req: Request, res: Response): Promise<any> => {
   try {
     const id = Number(req.params.id);
-    console.log("id", id);
     const result = await deleteCarSer(id);
-    return successResponse(res, result, "Car deleted successfully");
+    return successResponse(res, result, "Car delete successfully");
   } catch (error) {
     return errorResponse(res, error, 500);
   }
@@ -52,7 +53,10 @@ export const deleteCarCTL = async (req: Request, res: Response): Promise<any> =>
 
 export const getAllCarCTL = async (req: Request, res: Response): Promise<any> => {
   try {
-    const result = await getAllCarSer();
+    let { limit, offset } = req.query;
+    const pageLimit = parseInt(limit as string) || 5;
+    const pageOffset = parseInt(offset as string) || 0;
+    const result = await getAllCarSer(pageLimit, pageOffset);
     return successResponse(res, result, "Car get all successfully");
   } catch (error) {
     return errorResponse(res, error, 500);
@@ -61,8 +65,8 @@ export const getAllCarCTL = async (req: Request, res: Response): Promise<any> =>
 
 export const getCarByIdCTL = async (req: Request, res: Response): Promise<any> => {
   const id = Number(req.params.id);
-  console.log("id", id);
   try {
+    if (id === 0) return successResponse(res, null, "Car Id not exist!");
     const result = await getCarByIdSer(id);
     return successResponse(res, result, "Car get by id successfully");
   } catch (error) {
@@ -72,7 +76,6 @@ export const getCarByIdCTL = async (req: Request, res: Response): Promise<any> =
 
 export const getCarByLicensePlateCTL = async (req: Request, res: Response): Promise<any> => {
   const licensePlate = req.params.licensePlate;
-  console.log("licensePlate", licensePlate);
   try {
     const result = await getCarByLicensePlateSer(licensePlate);
     return successResponse(res, result, "Car get by license plate successfully");
@@ -125,6 +128,39 @@ export const getCarByTypeAndStatusCTL = async (
 
     const result = await getCarByTypeAndStatusSer(type, status);
     return successResponse(res, result, "Car get by type and status successfully");
+  } catch (error) {
+    return errorResponse(res, error, 500);
+  }
+};
+//
+export const addImgCarCTL = async (req: RequestWithProcessedFiles, res: Response) => {
+  const data = JSON.parse(req.body.data);
+  const resultCloudinary = req.processedFiles;
+  try {
+    const result = await addImgCar(data, resultCloudinary);
+    return successResponse(res, result, "Add Image Car successfully");
+  } catch (error) {
+    return errorResponse(res, error, 500);
+  }
+};
+
+export const updateImgCarCTL = async (req: RequestFile, res: Response) => {
+  const data = JSON.parse(req.body.data);
+  const resultCloudinary = req.uploadedImage;
+  console.log(resultCloudinary);
+  try {
+    const result = await updateImgCarSer(data, resultCloudinary);
+    return successResponse(res, result, "Update Image Car successfully");
+  } catch (error) {
+    return errorResponse(res, error, 500);
+  }
+};
+
+export const deleteImgCarCTL = async (req: Request, res: Response) => {
+  const data = req.body;
+  try {
+    const result = await deleteImgCarSer(data);
+    return successResponse(res, result, "Delete Image Car successfully");
   } catch (error) {
     return errorResponse(res, error, 500);
   }

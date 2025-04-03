@@ -12,11 +12,11 @@ import {
 import { verifyRefreshToken } from "../utils/jwt.util";
 import { errorResponse, successResponse } from "../utils/response.util";
 import {
-  CloudinaryAsset,
   RequestWithProcessedFiles,
   uploadImages,
   uploadImagesToCloudinary,
 } from "../middlewares/uploadHandler";
+import { CloudinaryAsset } from "../@types/cloudinary";
 
 interface UploadedFile extends Express.Multer.File {
   cloudinaryURL?: string;

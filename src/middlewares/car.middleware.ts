@@ -15,17 +15,17 @@ export const validateCreateCar: ValidationChain[] = [
     .withMessage("Loại xe không được để trống")
     .isIn(["Xe thường", "Xe giường nằm"])
     .withMessage("Loại xe không hợp lệ"),
-  body("status")
-    .trim()
-    .notEmpty()
-    .withMessage("Trạng thái xe không được để trống")
-    .isIn(["Sẵn sàng", "Đang chạy", "Bảo trì"])
-    .withMessage("Trạng thái xe không hợp lệ"),
+  // body("status")
+  //   .trim()
+  //   .notEmpty()
+  //   .withMessage("Trạng thái xe không được để trống")
+  //   .isIn(["Sẵn sàng", "Đang chạy", "Bảo trì"])
+  //   .withMessage("Trạng thái xe không hợp lệ"),
 ];
 
 // Middleware xử lý lỗi validation
 export const validateCreateCarMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const errors = validationResult(req);
+  const errors = validationResult(req.body.data);
   if (!errors.isEmpty()) {
     res.status(400).json({ errors: errors.array() });
     return;
@@ -47,13 +47,13 @@ export const validateUpdateCar: ValidationChain[] = [
     .withMessage("Loại xe không được để trống")
     .isIn(["Xe thường", "Xe giường nằm"])
     .withMessage("Loại xe không hợp lệ"),
-  body("status")
-    .optional()
-    .trim()
-    .notEmpty()
-    .withMessage("Trạng thái xe không được để trống")
-    .isIn(["Sẵn sàng", "Đang chạy", "Bảo trì"])
-    .withMessage("Trạng thái xe không hợp lệ"),
+  // body("status")
+  //   .optional()
+  //   .trim()
+  //   .notEmpty()
+  //   .withMessage("Trạng thái xe không được để trống")
+  //   .isIn(["Sẵn sàng", "Đang chạy", "Bảo trì"])
+  //   .withMessage("Trạng thái xe không hợp lệ"),
 ];
 
 // Middleware xử lý lỗi
@@ -62,7 +62,7 @@ export const validateUpdateCarMiddleware = (
   res: Response,
   next: NextFunction
 ): void => {
-  const errors = validationResult(req);
+  const errors = validationResult(req.body.data);
   if (!errors.isEmpty()) {
     res.status(400).json({ errors: errors.array() });
     return;

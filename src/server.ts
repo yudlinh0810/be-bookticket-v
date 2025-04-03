@@ -2,8 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-import routes from "./routes/routes.route"; // Import routes từ file `routes.route.ts`
-import { errorHandler } from "./middlewares/error.middleware"; // Import middleware lỗi
+import routes from "./routes/routes.routes"; // Import routes từ file `routes.route.ts`
 import { config } from "./config/config";
 import initSocket from "./socket";
 import { createServer } from "http";

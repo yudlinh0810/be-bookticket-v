@@ -3,6 +3,8 @@ import { validateFile } from "../utils/validateFile.util";
 
 const storage = multer.memoryStorage();
 
+export const uploadImage = multer({ storage }).single("file");
+
 export const uploadImages = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } }).array(
   "files",
   5

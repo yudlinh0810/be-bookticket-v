@@ -1,8 +1,8 @@
 import express, { NextFunction, Request, Response } from "express";
 import { errorHandler } from "../middlewares/error.middleware";
-import carRouter from "./car.route";
-import customerRouter from "./customer.route";
-import locationRouter from "./location.route";
+import carRouter from "./car.routes";
+import customerRouter from "./customer.routes";
+import locationRouter from "./location.routes";
 
 const routes = (app: express.Application): void => {
   // Cấu hình routes

@@ -5,30 +5,11 @@ import deleteOldFile from "../utils/deleteOldFile.util";
 import { getCloudinaryFolder } from "../utils/getCloudinaryFolder.util";
 import { validateFile } from "../utils/validateFile.util";
 import { UploadApiResponse } from "cloudinary";
+import { CloudinaryAsset } from "../@types/cloudinary";
 
-export interface CloudinaryAsset {
-  asset_id?: string;
-  public_id: string;
-  version?: number;
-  version_id?: string;
-  signature?: string;
-  width?: number;
-  height?: number;
-  format?: string;
-  resource_type?: string;
-  created_at?: string;
-  tags?: string[];
-  bytes?: number;
-  type?: string;
-  etag?: string;
-  placeholder?: boolean;
-  url?: string;
-  secure_url: string;
-  asset_folder?: string;
-  display_name?: string;
-  original_filename?: string;
+export interface RequestFile extends Request {
+  uploadedImage: CloudinaryAsset;
 }
-
 interface RequestWithFile extends Request {
   file?: Express.Multer.File & { cloudinaryFile?: CloudinaryAsset };
 }
@@ -92,35 +73,39 @@ const uploadImagesToCloudinary = async (
   res: Response,
   next: NextFunction
 ) => {
+  console.log("data", req.body.data);
   try {
     if (!req.files || req.files.length === 0) {
       return next();
     }
     let files = req.files as Express.Multer.File[];
     let bodyData;
-    try {
-      bodyData = JSON.parse(req.body?.data || "{}");
-      if (!bodyData.email) return next("Email is required");
-    } catch (error) {
-      return next("Invalid JSON data format");
-    }
+    // try {
+    //   bodyData = JSON.parse(req.body?.data || "{}");
+    //   if (!bodyData.email) return next("Email is required");
+    // } catch (error) {
+    //   return next("Invalid JSON data format");
+    // }
 
-    const { role } = bodyData;
+    // const { role } = bodyData;
 
-    if (!role) {
-      return next("Missing role");
-    }
+    // if (!role) {
+    //   return next("Missing role");
+    // }
 
-    const folder = getCloudinaryFolder(role);
-    if (!folder) {
-      return next("The user does not exist");
-    }
+    // const folder = getCloudinaryFolder(role);
+
+    // if (!folder) {
+    //   return next("The user does not exist");
+    // }
+
+    const folder = "book-bus-ticket/image/car";
 
     const uploadImages: CloudinaryAsset[] = [];
     const allowedFormats = ["png", "jpg", "jpeg"];
 
     // Upload all images
-    if (files.length > 1) {
+    if (files.length > 0) {
       await Promise.all(
         files.map(async (file) => {
           if (!validateFile(file.originalname, "image")) {
@@ -179,4 +164,62 @@ const uploadImagesToCloudinary = async (
   }
 };
 
-export { uploadImages, uploadImagesToCloudinary, uploadVideo, uploadVideoToCloudinary };
+const uploadImageToCloudinary = async (req: RequestFile, res: Response, next: NextFunction) => {
+  try {
+    if (!req.file) {
+      return next();
+    }
+    let file = req.file as Express.Multer.File;
+    let bodyData;
+    try {
+      bodyData = JSON.parse(req.body?.data || "{}");
+      // if (!bodyData.email) return next("Email is required");
+    } catch (error) {
+      return next("Invalid JSON data format");
+    }
+
+    const { role } = bodyData;
+
+    // if (!role) {
+    //   return next("Missing role");
+    // }
+
+    const folder = getCloudinaryFolder(role);
+    console.log(folder);
+    // if (!folder) {
+    //   return next("The user does not exist");
+    // }
+
+    const allowedFormats = ["png", "jpg", "jpeg"];
+
+    // Upload image
+    if (!validateFile(file.originalname, "image")) {
+      throw new Error(
+        `Invalid file format: ${file.originalname}, Only jpg, png, jpeg are allowed.`
+      );
+    }
+    const result: UploadApiResponse = await uploadToCloudinary(
+      file.buffer,
+      folder,
+      allowedFormats,
+      "image"
+    );
+    // if (bodyData.urlPublicImg) {
+    //   await deleteOldFile(bodyData.urlPublicImg, "image");
+    // }
+    req.uploadedImage = result;
+
+    next();
+  } catch (error) {
+    console.error("Upload Images error:", error);
+    res.status(500).json({ message: "Error uploading images to Cloudinary" });
+  }
+};
+
+export {
+  uploadImages,
+  uploadImageToCloudinary,
+  uploadImagesToCloudinary,
+  uploadVideo,
+  uploadVideoToCloudinary,
+};

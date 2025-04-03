@@ -2,10 +2,10 @@ import bcrypt from "bcrypt";
 import { RowDataPacket } from "mysql2/promise";
 import otpGenerator from "otp-generator";
 import { bookBusTicketsDB, globalBookTicketsDB } from "../config/db";
-import { CloudinaryAsset } from "../middlewares/uploadHandler";
 import { generalAccessToken, generalRefreshToken } from "../utils/jwt.util";
 import { sendOtpEmail } from "./email.service";
 import { findOtp, insertOtp, isValidOtp } from "./otp.service";
+import { CloudinaryAsset } from "../@types/cloudinary";
 
 interface Customer {
   email: string;

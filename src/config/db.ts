@@ -9,8 +9,9 @@ const globalBookTicketsDB = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.GLOBAL_BOOK_TICKETS_DB,
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 50,
   queueLimit: 0,
+  timezone: "+07:00",
 });
 
 const bookBusTicketsDB = mysql.createPool({
@@ -19,8 +20,9 @@ const bookBusTicketsDB = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.BOOK_BUS_TICKETS_DB,
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 50,
   queueLimit: 0,
+  timezone: "+07:00",
 });
 
 export { globalBookTicketsDB, bookBusTicketsDB };

@@ -1,0 +1,25 @@
+// {
+//   "compilerOptions": {
+//     "target": "es6",
+//     "module": "commonjs",
+//     "types": ["node", "express"],
+//     // "rootDir": "/src",
+//     // "outDir": "/dist",
+//     // "strict": true,
+//     "esModuleInterop": true,
+//     "typeRoots": ["./node_modules/@types", "@types"]
+//   },
+//   "include": ["src", "src/@types/express.d.ts"]
+// }
+
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "typeRoots": ["./node_modules/@types", "./@types"],
+    "types": ["node", "express"]
+  },
+  "include": ["src/**/*.ts", "@types/express.d.ts"],
+  "exclude": ["node_modules", "dist"]
+}
