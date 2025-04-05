@@ -40,44 +40,50 @@ export const totalCar = async () => {
   return (rows as any)[0].totalCarList ?? 0;
 };
 
-export const addCarSer = (newCar: CarRequest, filesCloudinary): Promise<any> => {
+export const addCarSer = (newCar: CarRequest, filesCloudinary: CloudinaryAsset[]): Promise<any> => {
   return new Promise(async (resolve, reject) => {
     try {
       const { licensePlate, capacity, type, indexIsMain } = newCar;
+      const index = Number(indexIsMain);
       console.log("data", newCar);
+      console.log("files", filesCloudinary);
       const sqlCar = "call AddCar(?, ?, ?)";
       const values = [licensePlate, capacity, type];
       const [result] = await bookBusTicketsDB.execute<ResultSetHeader>(sqlCar, values);
       const car = await checkCar(licensePlate);
 
       if (result.affectedRows > 0 && checkCar(licensePlate)) {
-        for (const file of filesCloudinary) {
-          if (file.cloudinaryImages && file.cloudinaryImages.length > 0) {
-            let count = 0;
-            for (const image of file.cloudinaryImages as CloudinaryAsset[]) {
-              console.log("count:", count);
-              // Lặp qua từng ảnh trong cloudinaryImages
-              const [resultRows] = await bookBusTicketsDB.execute<ResultSetHeader>(
-                "call AddCarImage(?, ?, ?, ?)",
-                [car.id, image.secure_url, image.public_id, Number(indexIsMain) === count ? 1 : 0]
-              );
-              if (resultRows.affectedRows > 0) {
-                await ++count;
-              } else {
-                deleteOldFile(image.public_id);
-              }
+        if (filesCloudinary && filesCloudinary.length > 0) {
+          let count = 0;
+          const promise = filesCloudinary.map(async (image) => {
+            console.log("count:", count);
+
+            const [resultRows] = await bookBusTicketsDB.execute<ResultSetHeader>(
+              "call AddCarImage(?, ?, ?, ?)",
+              [car.id, image.secure_url, image.public_id, index === count ? 1 : 0]
+            );
+
+            if (resultRows.affectedRows > 0) {
+              return ++count;
+            } else {
+              deleteOldFile(image.public_id);
+              return ++count;
             }
-          }
+          });
+          await Promise.all(promise);
         }
-        resolve({});
       }
+      resolve({});
     } catch (error) {
       reject(error);
     }
   });
 };
 
-export const updateCarSer = async (updateCar: CarRequest, filesCloudinary): Promise<any> => {
+export const updateCarSer = async (
+  updateCar: CarRequest,
+  filesCloudinary: CloudinaryAsset[]
+): Promise<any> => {
   try {
     const { id, licensePlate, capacity, type, indexIsMain } = updateCar;
     if (checkCar(licensePlate)) {
@@ -108,33 +114,31 @@ export const updateCarSer = async (updateCar: CarRequest, filesCloudinary): Prom
         // Biến để đảm bảo chỉ có một ảnh chính
         let mainImageSet = false;
 
-        for (const file of filesCloudinary) {
-          if (file.cloudinaryImages && file.cloudinaryImages.length > 0) {
-            for (let i = 0; i < file.cloudinaryImages.length; i++) {
-              const image = file.cloudinaryImages[i];
+        if (filesCloudinary && filesCloudinary.length > 0) {
+          for (let i = 0; i < filesCloudinary.length; i++) {
+            const image = filesCloudinary[i];
 
-              // Kiểm tra đầy đủ để không có undefined
-              if (!image || !image.secure_url || !image.public_id) {
-                console.log("Bỏ qua ảnh không hợp lệ:", i);
-                continue;
-              }
-
-              // Xác định có phải ảnh chính không
-              const isMain = i === isMainIndex && !mainImageSet ? 1 : 0;
-
-              // Nếu đây là ảnh chính, đánh dấu đã đặt ảnh chính
-              if (isMain === 1) {
-                mainImageSet = true;
-              }
-
-              // Đảm bảo không có giá trị undefined trong tham số SQL
-              await bookBusTicketsDB.execute("call AddCarImage(?, ?, ?, ?)", [
-                id || null,
-                image.secure_url || null,
-                image.public_id || null,
-                isMain,
-              ]);
+            // Kiểm tra đầy đủ để không có undefined
+            if (!image || !image.secure_url || !image.public_id) {
+              console.log("Bỏ qua ảnh không hợp lệ:", i);
+              continue;
             }
+
+            // Xác định có phải ảnh chính không
+            const isMain = i === isMainIndex && !mainImageSet ? 1 : 0;
+
+            // Nếu đây là ảnh chính, đánh dấu đã đặt ảnh chính
+            if (isMain === 1) {
+              mainImageSet = true;
+            }
+
+            // Đảm bảo không có giá trị undefined trong tham số SQL
+            await bookBusTicketsDB.execute("call AddCarImage(?, ?, ?, ?)", [
+              id || null,
+              image.secure_url || null,
+              image.public_id || null,
+              isMain,
+            ]);
           }
         }
       }

@@ -15,11 +15,11 @@ interface RequestWithFile extends Request {
 }
 
 export interface UploadedFile extends Express.Multer.File {
-  cloudinaryImages?: CloudinaryAsset[];
+  cloudinaryImages?: CloudinaryAsset;
 }
 
 export interface RequestWithProcessedFiles extends Request {
-  processedFiles: UploadedFile[];
+  processedFiles: CloudinaryAsset[];
   processedFile: CloudinaryAsset;
 }
 
@@ -153,9 +153,10 @@ const uploadImagesToCloudinary = async (
     //   file.cloudinaryImages = [uploadImages[index]];
     // });
 
-    req.processedFiles = uploadImages.map((image) => ({
+    req.processedFiles = uploadImages.map((image, index) => ({
+      ...req.files[index],
       cloudinaryImages: [image],
-    })) as UploadedFile[];
+    })) as CloudinaryAsset[];
 
     next();
   } catch (error) {

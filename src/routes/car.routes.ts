@@ -58,21 +58,21 @@ carRouter.get("/license-plate/:licensePlate", getCarByLicensePlateCTL);
 carRouter.post("/type/:type", getCarByTypeCTL);
 carRouter.post("/status/:status", getCarByStatusCTL);
 carRouter.post("/type/:type/status/:status", getCarByTypeAndStatusCTL);
-carRouter.get("/get", async (req, res) => {
-  try {
-    const client = await pool.connect();
-    const result = await client.query("SELECT NOW()"); // Kiểm tra kết nối bằng truy vấn thời gian hiện tại
-    client.release();
+// carRouter.get("/get", async (req, res) => {
+//   try {
+//     const client = await pool.connect();
+//     const result = await client.query("SELECT NOW()"); // Kiểm tra kết nối bằng truy vấn thời gian hiện tại
+//     client.release();
 
-    res.json({
-      message: "Connected to PostgreSQL!",
-      serverTime: result.rows[0].now,
-    });
-  } catch (err) {
-    console.error("Connection error:", err);
-    res.status(500).json({ message: "Database connection failed", error: err });
-  }
-});
+//     res.json({
+//       message: "Connected to PostgreSQL!",
+//       serverTime: result.rows[0].now,
+//     });
+//   } catch (err) {
+//     console.error("Connection error:", err);
+//     res.status(500).json({ message: "Database connection failed", error: err });
+//   }
+// });
 
 export default carRouter;
 // Compare this snippet from be-booktickets/src/controllers/car.controller.ts:
