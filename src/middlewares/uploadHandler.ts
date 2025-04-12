@@ -186,7 +186,6 @@ const uploadImageToCloudinary = async (req: RequestFile, res: Response, next: Ne
     // }
 
     const folder = getCloudinaryFolder(role);
-    console.log(folder);
     // if (!folder) {
     //   return next("The user does not exist");
     // }
@@ -205,9 +204,7 @@ const uploadImageToCloudinary = async (req: RequestFile, res: Response, next: Ne
       allowedFormats,
       "image"
     );
-    // if (bodyData.urlPublicImg) {
-    //   await deleteOldFile(bodyData.urlPublicImg, "image");
-    // }
+
     req.uploadedImage = result;
 
     next();

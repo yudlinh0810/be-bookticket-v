@@ -1,14 +1,28 @@
-export interface Customer {
+export type ProviderType = "google" | "facebook" | "email";
+
+export interface CustomerType {
   id: number;
   email: string;
-  first_name: string;
-  last_name: string;
+  fullName: string;
   password: string;
-  url_img: string;
-  public_img_id: string;
+  dateBirth: string;
   phone: string;
   address: string;
-  create_at: string; // timestamp
-  update_at: string; // timestamp
+  provider: ProviderType;
+  urlImg: string;
+  urlPublicImg: string;
+  createAt: string; // timestamp
+  updateAt: string; // timestamp
   role: "customer" | "admin" | "user";
+}
+
+export interface CustomerRegister {
+  email: string;
+  password: string;
+  fullName: string;
+}
+
+export interface CustomerLogin {
+  email: string;
+  password: string;
 }

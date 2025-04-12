@@ -1,232 +1,139 @@
+// controllers/customer.controller.ts
 import { Request, Response } from "express";
-import {
-  addCustomerSer,
-  deleteCustomerSer,
-  fetchCustomerSer,
-  getAllCustomerSer,
-  // loginSer,
-  // registerSer,
-  updateCustomerSer,
-  // verifyEmailSer,
-} from "../services/customer.service";
 import { verifyRefreshToken } from "../utils/jwt.util";
 import { errorResponse, successResponse } from "../utils/response.util";
-import {
-  RequestWithProcessedFiles,
-  uploadImages,
-  uploadImagesToCloudinary,
-} from "../middlewares/uploadHandler";
+import { RequestFile } from "../middlewares/uploadHandler";
 import { CloudinaryAsset } from "../@types/cloudinary";
 import { ArrangeType } from "../@types/type";
-import { log } from "../utils/logger";
+import { CustomerService } from "../services/customer.service";
+import { globalBookTicketsDB } from "../config/db";
 
-// export const register = async (req: Request, res: Response): Promise<any> => {
-//   try {
-//     const { email, password, confirmPassword } = req.body;
-//     const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
-//     const isCheckEmail = reg.test(email);
+export class CustomerController {
+  private customerService = new CustomerService(globalBookTicketsDB);
 
-//     if (!email || !password || !confirmPassword) {
-//       return res.status(200).json({
-//         status: "ERR",
-//         message: "The input is required",
-//       });
-//     }
+  register = async (req: Request, res: Response): Promise<any> => {
+    try {
+      const { email, password, confirmPassword } = req.body;
+      const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+      const isCheckEmail = reg.test(email);
 
-//     if (!isCheckEmail) {
-//       return res.status(200).json({
-//         status: "ERR",
-//         message: "Email is not in correct format",
-//       });
-//     }
+      if (!email || !password || !confirmPassword) {
+        return errorResponse(res, "The input is required", 200);
+      }
 
-//     if (password !== confirmPassword) {
-//       return res
-//         .status(200)
-//         .json({ status: "ERR", message: "Password and confirm password are not the same" });
-//     } else {
-//       const data = await registerSer(req.body);
-//       const { refresh_token, ...newData } = data;
+      if (!isCheckEmail) {
+        return errorResponse(res, "Email is not in correct format", 200);
+      }
 
-//       res.cookie("refresh_token", refresh_token, {
-//         httpOnly: true,
-//         secure: process.env.NODE_ENV === "production",
-//         sameSite: "strict",
-//         maxAge: 7 * 24 * 60 * 60 * 1000,
-//       });
-//       return res.status(200).json({
-//         status: "OK",
-//         newData,
-//       });
-//     }
-//   } catch (err) {
-//     console.log(err);
-//     return res.status(404).json({
-//       message: "Controller.login err",
-//       error: err,
-//     });
-//   }
-// };
+      if (password !== confirmPassword) {
+        return errorResponse(res, "Password and confirm password are not the same", 200);
+      }
 
-// export const login = async (req: Request, res: Response): Promise<any> => {
-//   try {
-//     const { email, password } = req.body;
-//     const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
-//     const isCheckEmail = reg.test(email);
+      const data = await this.customerService.register(req.body);
+      const { refresh_token, ...newData } = data;
 
-//     if (!email || !password) {
-//       return res.status(200).json({
-//         status: "ERR",
-//         message: "The input is required",
-//       });
-//     }
-
-//     if (!isCheckEmail) {
-//       return res.status(200).json({
-//         status: "ERR",
-//         message: "Email is not in correct format",
-//       });
-//     }
-
-//     const response = await loginSer(req.body);
-//     const { refresh_token, ...newData } = response;
-
-//     res.cookie("refresh_token", refresh_token, {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === "production",
-//       sameSite: "strict",
-//       maxAge: 7 * 24 * 60 * 60 * 1000,
-//     });
-//     return res.status(200).json(newData);
-//   } catch (err) {
-//     console.log(err);
-//     return res.status(404).json({
-//       message: "Controller.login err",
-//       error: err,
-//     });
-//   }
-// };
-
-// export const verifyEmail = async (req: Request, res: Response): Promise<any> => {
-//   try {
-//     const { email, otp } = req.body;
-//     const response = await verifyEmailSer(email, otp);
-//     return res.status(200).json(response);
-//   } catch (error) {
-//     return res.status(404).json({
-//       status: "ERR",
-//       message: "ERR Controller.verifyEmail",
-//     });
-//   }
-// };
-
-export const refreshToken = async (req: Request, res: Response): Promise<any> => {
-  try {
-    const token = req.headers.token?.toString().split(" ")[1];
-    if (!token) {
-      return res.status(200).json({
-        status: "ERR",
-        message: "Token is not defined",
+      res.cookie("refresh_token", refresh_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       });
+
+      return successResponse(res, newData, "Register success");
+    } catch (err) {
+      console.log(err);
+      return errorResponse(res, "Controller.register error", 404);
     }
-    const data = await verifyRefreshToken(token);
-    const { refresh_token, ...newData } = data;
+  };
 
-    res.cookie("refresh_token", refresh_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-    return res.status(200).json(newData);
-  } catch (error) {
-    console.log("err refresh token", error);
-    return res.status(404).json({
-      status: "ERR",
-      message: "ERR Controller.refreshToken",
-    });
-  }
-};
+  verifyEmail = async (req: Request, res: Response): Promise<any> => {
+    try {
+      const { email, otp } = req.body;
+      const response = await this.customerService.verifyEmail(email, otp);
+      return successResponse(res, response, "Verify email success");
+    } catch (error) {
+      return errorResponse(res, "ERR Controller.verifyEmail", 404);
+    }
+  };
 
-export const fetchCustomerControl = async (req: Request, res: Response): Promise<any> => {
-  const id = Number(req.params.id);
-  try {
-    const data = await fetchCustomerSer(id);
-    return successResponse(res, data, "fetch user success");
-  } catch (error) {
-    return res.status(404).json({
-      status: "ERR",
-      message: "ERR Controller.refreshToken",
-    });
-  }
-};
-
-export const updateCustomer = async (
-  req: RequestWithProcessedFiles,
-  res: Response
-): Promise<any> => {
-  try {
+  fetch = async (req: Request, res: Response): Promise<any> => {
     const id = Number(req.params.id);
-    if (!id) return errorResponse(res, "id is required", 404);
+    try {
+      const data = await this.customerService.fetch(id);
+      return successResponse(res, data, "Fetch user success");
+    } catch (error) {
+      return errorResponse(res, "ERR Controller.fetchCustomer", 404);
+    }
+  };
 
-    const updateData = req.body;
-    const file = req.processedFile as CloudinaryAsset;
-    const data = await updateCustomerSer(id, updateData, file || null);
-    return successResponse(res, data, "update user success");
-  } catch (error) {
-    console.log("Controller", error);
-    return res.status(404).json({
-      status: "ERR",
-      message: "ERR Controller.updateCustomer",
-    });
-  }
-};
+  update = async (req: Request, res: Response): Promise<any> => {
+    try {
+      const id = Number(req.params.id);
+      if (!id) return errorResponse(res, "id is required", 404);
 
-export const deleteCustomer = async (req: Request, res: Response): Promise<any> => {
-  const id = Number(req.params.id);
-  try {
-    const data = await deleteCustomerSer(id);
-    return successResponse(res, data, "delete user success");
-  } catch (error) {
-    console.log("Controller", error);
-    return res.status(404).json({
-      status: "ERR",
-      message: "ERR Controller.deleteCustomer",
-    });
-  }
-};
+      const updateData = req.body;
+      const data = await this.customerService.update(id, updateData);
+      return successResponse(res, data, "Update user success");
+    } catch (error) {
+      console.log("Controller", error);
+      return errorResponse(res, "ERR Controller.updateCustomer", 404);
+    }
+  };
 
-export const getAllCustomer = async (req: Request, res: Response): Promise<any> => {
-  try {
-    const limit = Number(req.query.limit) || 10;
-    const offset = Number(req.query.offset);
-    const arrangeType =
-      (req.query.arrangeType as string)?.toUpperCase() === "ASC" ? "ASC" : ("DESC" as ArrangeType);
-    log(`arrangeType: ${arrangeType}`);
-    if (limit < 0 || offset < 0)
-      return errorResponse(res, "limit and offset must be greater than 0", 404);
-    const data = await getAllCustomerSer(limit, offset, arrangeType);
-    return successResponse(res, data, "success");
-  } catch (error) {
-    console.log("Controller", error);
-    return errorResponse(res, "Err Ctl.getAllCustomer", 404);
-  }
-};
+  updateImage = async (req: RequestFile, res: Response): Promise<any> => {
+    try {
+      const id = Number(req.body.id);
+      const file = req.uploadedImage as CloudinaryAsset;
+      const publicId = req.body.publicId;
+      if (!id) return errorResponse(res, "id is required", 404);
 
-export const createCustomer = async (
-  req: RequestWithProcessedFiles,
-  res: Response
-): Promise<any> => {
-  const file = req.processedFile as CloudinaryAsset;
-  const newCustomer = req.body;
+      const data = await this.customerService.updateImage(id, publicId, file);
+      return successResponse(res, data, "Update image success");
+    } catch (error) {
+      console.log("Controller", error);
+      return errorResponse(res, "ERR Controller.updateImageCustomer", 404);
+    }
+  };
 
-  try {
-    const data = await addCustomerSer(newCustomer, file || null);
-    return successResponse(res, data, "success");
-  } catch (error) {
-    return res.status(404).json({
-      status: "ERR",
-      message: error.message,
-    });
-  }
-};
+  delete = async (req: Request, res: Response): Promise<any> => {
+    const id = Number(req.params.id);
+    try {
+      const data = await this.customerService.delete(id);
+      return successResponse(res, data, "Delete user success");
+    } catch (error) {
+      console.log("Controller", error);
+      return errorResponse(res, "ERR Controller.deleteCustomer", 404);
+    }
+  };
+
+  getAll = async (req: Request, res: Response): Promise<any> => {
+    try {
+      const limit = Number(req.query.limit) || 10;
+      const offset = Number(req.query.offset);
+      const arrangeType =
+        (req.query.arrangeType as string)?.toUpperCase() === "ASC"
+          ? "ASC"
+          : ("DESC" as ArrangeType);
+
+      if (limit < 0 || offset < 0)
+        return errorResponse(res, "limit and offset must be greater than 0", 404);
+
+      const data = await this.customerService.getAll(limit, offset, arrangeType);
+      return successResponse(res, data, "Get all customers success");
+    } catch (error) {
+      console.log("Controller", error);
+      return errorResponse(res, "ERR Controller.getAllCustomer", 404);
+    }
+  };
+
+  create = async (req: RequestFile, res: Response): Promise<any> => {
+    try {
+      const file = req.uploadedImage as CloudinaryAsset;
+      const newCustomer = JSON.parse(req.body.data);
+      const data = await this.customerService.add(newCustomer, file);
+      return successResponse(res, data, "Create customer success");
+    } catch (error) {
+      return errorResponse(res, error.message, 404);
+    }
+  };
+}

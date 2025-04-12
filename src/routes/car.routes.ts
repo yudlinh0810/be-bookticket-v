@@ -53,7 +53,7 @@ carRouter.put("/image/update", uploadImage, uploadImageToCloudinary, updateImgCa
 carRouter.delete("/image/delete", deleteImgCarCTL);
 carRouter.delete("/delete/:id", deleteCarCTL);
 carRouter.get("/get-all", getAllCarCTL);
-carRouter.post("/detail/:id", getCarByIdCTL);
+carRouter.get("/detail/:id", getCarByIdCTL);
 carRouter.get("/license-plate/:licensePlate", getCarByLicensePlateCTL);
 carRouter.post("/type/:type", getCarByTypeCTL);
 carRouter.post("/status/:status", getCarByStatusCTL);
