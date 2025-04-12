@@ -3,11 +3,11 @@ import { errorResponse, successResponse } from "../utils/response.util";
 import { RequestFile } from "../middlewares/uploadHandler";
 import { CloudinaryAsset } from "../@types/cloudinary";
 import { ArrangeType } from "../@types/type";
-import { CustomerService } from "../services/customer.service";
 import { globalBookTicketsDB } from "../config/db";
+import { DriverService } from "../services/driver.service";
 
-export class CustomerController {
-  private customerService = new CustomerService(globalBookTicketsDB);
+export class DriverController {
+  private driverService = new DriverService(globalBookTicketsDB);
 
   register = async (req: Request, res: Response): Promise<any> => {
     try {
@@ -27,7 +27,7 @@ export class CustomerController {
         return errorResponse(res, "Password and confirm password are not the same", 200);
       }
 
-      const data = await this.customerService.register(req.body);
+      const data = await this.driverService.register(req.body);
       const { refresh_token, ...newData } = data;
 
       res.cookie("refresh_token", refresh_token, {
@@ -47,7 +47,7 @@ export class CustomerController {
   verifyEmail = async (req: Request, res: Response): Promise<any> => {
     try {
       const { email, otp } = req.body;
-      const response = await this.customerService.verifyEmail(email, otp);
+      const response = await this.driverService.verifyEmail(email, otp);
       return successResponse(res, response, "Verify email success");
     } catch (error) {
       return errorResponse(res, "ERR Controller.verifyEmail", 404);
@@ -57,8 +57,8 @@ export class CustomerController {
   fetch = async (req: Request, res: Response): Promise<any> => {
     const id = Number(req.params.id);
     try {
-      const data = await this.customerService.fetch(id);
-      return successResponse(res, data, "Fetch customer success");
+      const data = await this.driverService.fetch(id);
+      return successResponse(res, data, "Fetch driver success");
     } catch (error) {
       return errorResponse(res, "ERR Controller.fetch", 404);
     }
@@ -70,8 +70,8 @@ export class CustomerController {
       if (!id) return errorResponse(res, "id is required", 404);
 
       const updateData = req.body;
-      const data = await this.customerService.update(id, updateData);
-      return successResponse(res, data, "Update user success");
+      const data = await this.driverService.update(id, updateData);
+      return successResponse(res, data, "Update driver success");
     } catch (error) {
       console.log("Err Controller", error);
       return errorResponse(res, "ERR Controller.update", 404);
@@ -85,7 +85,7 @@ export class CustomerController {
       const publicId = req.body.publicId;
       if (!id) return errorResponse(res, "id is required", 404);
 
-      const data = await this.customerService.updateImage(id, publicId, file);
+      const data = await this.driverService.updateImage(id, publicId, file);
       return successResponse(res, data, "Update image success");
     } catch (error) {
       console.log("Err Controller", error);
@@ -105,8 +105,8 @@ export class CustomerController {
       if (limit < 0 || offset < 0)
         return errorResponse(res, "limit and offset must be greater than 0", 404);
 
-      const data = await this.customerService.getAll(limit, offset, arrangeType);
-      return successResponse(res, data, "Get all customers success");
+      const data = await this.driverService.getAll(limit, offset, arrangeType);
+      return successResponse(res, data, "Get all driver success");
     } catch (error) {
       console.log("Err Controller", error);
       return errorResponse(res, "ERR Controller.getAll", 404);
@@ -116,9 +116,9 @@ export class CustomerController {
   create = async (req: RequestFile, res: Response): Promise<any> => {
     try {
       const file = req.uploadedImage as CloudinaryAsset;
-      const newCustomer = JSON.parse(req.body.data);
-      const data = await this.customerService.add(newCustomer, file);
-      return successResponse(res, data, "Create customer success");
+      const newDriver = JSON.parse(req.body.data);
+      const data = await this.driverService.add(newDriver, file);
+      return successResponse(res, data, "Create driver success");
     } catch (error) {
       console.log("Err Controller", error);
       return errorResponse(res, "ERR Controller.create", 404);

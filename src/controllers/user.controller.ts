@@ -69,4 +69,15 @@ export class UserController {
       return errorResponse(res, "ERR Controller.refreshToken", 404);
     }
   };
+
+  delete = async (req: Request, res: Response): Promise<any> => {
+    const id = Number(req.params.id);
+    try {
+      const data = await this.userService.delete(id);
+      return successResponse(res, data, "Delete user success");
+    } catch (error) {
+      console.log("Controller", error);
+      return errorResponse(res, "ERR Controller.deleteUser", 404);
+    }
+  };
 }

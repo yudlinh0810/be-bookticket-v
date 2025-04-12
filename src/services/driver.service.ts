@@ -6,27 +6,15 @@ import { sendOtpEmail } from "./email.service";
 import { findOtp, insertOtp, isValidOtp } from "./otp.service";
 import { CloudinaryAsset } from "../@types/cloudinary";
 import { ArrangeType, UserRegister } from "../@types/type";
-import { CustomerType } from "../@types/customer";
 import { convertToVietnamTime } from "../utils/convertTime";
 import deleteOldFile from "../utils/deleteOldFile.util";
 import { UserService } from "./user.service";
 import { generalAccessToken, generalRefreshToken } from "../utils/jwt.util";
-
-type Customer = {
-  email: string;
-  fullName?: string;
-  sex?: "male" | "female" | "other";
-  password: string;
-  urlImg?: string;
-  urlPublicImg?: string;
-  phone?: string;
-  dateBirth?: string;
-  address?: string;
-};
+import { DriverType } from "../@types/driver";
 
 const userService = new UserService(globalBookTicketsDB);
 
-export class CustomerService {
+export class DriverService {
   private db;
 
   constructor(db: any) {
@@ -35,18 +23,18 @@ export class CustomerService {
 
   async total(): Promise<number> {
     try {
-      const query = "select count(*) as totalCustomerList from user where role = 'customer'";
+      const query = "select count(*) as totalDriverList from user where role = 'driver'";
       const [rows] = await this.db.execute(query);
-      return (rows as RowDataPacket[])[0].totalCustomerList;
+      return (rows as RowDataPacket[])[0].totalDriverList;
     } catch (error) {
       throw error;
     }
   }
 
-  register(newCustomer: UserRegister): Promise<any> {
+  register(newDriver: UserRegister): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
-        const { email, password, fullName, confirmPassword } = newCustomer;
+        const { email, password, fullName, confirmPassword } = newDriver;
 
         if (password !== confirmPassword) {
           return resolve({
@@ -71,7 +59,7 @@ export class CustomerService {
         });
 
         const passwordHash = await bcrypt.hash(password, 10);
-        await insertOtp({ otp, email, passwordHash, fullName, role: "customer" });
+        await insertOtp({ otp, email, passwordHash, fullName, role: "driver" });
         await sendOtpEmail({ email, otp });
 
         resolve({
@@ -107,13 +95,13 @@ export class CustomerService {
 
         if (isValid && email === checkOtp.email) {
           const sql = `insert into user (email, password, fullName, role) values (?, ?, ?, ?)`;
-          const values = [checkOtp.email, checkOtp.fullName, checkOtp.password, "customer"];
+          const values = [checkOtp.email, checkOtp.fullName, checkOtp.password, "driver"];
 
           const [rows] = (await this.db.execute(sql, values)) as [ResultSetHeader];
 
           if (rows.affectedRows > 0) {
-            const access_token = generalAccessToken({ id: email, role: "customer" });
-            const refresh_token = generalRefreshToken({ id: email, role: "customer" });
+            const access_token = generalAccessToken({ id: email, role: "driver" });
+            const refresh_token = generalRefreshToken({ id: email, role: "driver" });
 
             return resolve({
               status: "OK",
@@ -132,21 +120,22 @@ export class CustomerService {
   fetch(id: number): Promise<object> {
     return new Promise(async (resolve, reject) => {
       try {
-        const [rows] = await this.db.execute("call fetch_customer(?)", [id]);
+        const [rows] = await this.db.execute("call fetch_driver(?)", [id]);
         if (rows[0].length === 0) {
           resolve({
             status: "ERR",
-            message: "Customer not found",
+            message: "Driver not found",
           });
         }
 
-        let detailCus: CustomerType = rows[0][0];
+        let detailDriver: DriverType = rows[0][0];
 
-        detailCus.createAt = convertToVietnamTime(detailCus.createAt);
-        detailCus.updateAt = convertToVietnamTime(detailCus.updateAt);
-        detailCus.dateBirth = convertToVietnamTime(detailCus.dateBirth);
+        detailDriver.createAt = convertToVietnamTime(detailDriver.createAt);
+        detailDriver.updateAt = convertToVietnamTime(detailDriver.updateAt);
+        detailDriver.dateBirth = convertToVietnamTime(detailDriver.dateBirth);
+        detailDriver.experienceYears = convertToVietnamTime(detailDriver.experienceYears);
 
-        resolve(detailCus);
+        resolve(detailDriver);
       } catch (error) {
         console.log("Err Service.getDetail", error);
         reject(error);
@@ -154,24 +143,26 @@ export class CustomerService {
     });
   }
 
-  update(id: number, updateCustomer: Customer): Promise<any> {
+  update(id: number, updateDriver: DriverType): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
-        const hashPass = await bcrypt.hash(updateCustomer.password, 10);
-        const sql = "call update_customer( ?, ?, ?, ?, ?, ?, ?)";
+        const hashPass = await bcrypt.hash(updateDriver.password, 10);
+        const sql = "call update_driver( ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         const values = [
           id,
-          updateCustomer.fullName,
-          updateCustomer.sex,
+          updateDriver.fullName,
+          updateDriver.sex,
           hashPass,
-          updateCustomer.phone,
-          updateCustomer.dateBirth,
-          updateCustomer.address,
+          updateDriver.licenseNumber,
+          updateDriver.experienceYears,
+          updateDriver.phone,
+          updateDriver.dateBirth,
+          updateDriver.address,
         ];
 
         const [rows] = (await this.db.execute(sql, values)) as [ResultSetHeader];
         if (rows.affectedRows === 0) {
-          return resolve({ status: "ERR", message: "Customer not found" });
+          return resolve({ status: "ERR", message: "Driver not found" });
         }
         resolve({
           status: "OK",
@@ -195,7 +186,7 @@ export class CustomerService {
           if (rows.affectedRows === 0) {
             return resolve({
               status: "ERR",
-              message: "Customer not found",
+              message: "Update driver failed",
             });
           } else {
             deleteOldFile(publicId, "image");
@@ -217,13 +208,13 @@ export class CustomerService {
   ): Promise<{ status: string; total: number; totalPage: number; data: object }> {
     return new Promise(async (resolve, reject) => {
       try {
-        const totalCustomerCount = await this.total();
-        const [row] = await this.db.execute("call get_all_customer(?, ?, ?)", [
+        const totalCount = await this.total();
+        const [row] = await this.db.execute("call get_all_driver(?, ?, ?)", [
           limit,
           offset,
           arrangeType,
         ]);
-        let dataCustomer: CustomerType[] = row[0].map((item: CustomerType) => {
+        let dataCustomer: DriverType[] = row[0].map((item: DriverType) => {
           item.createAt = convertToVietnamTime(item.createAt);
           item.updateAt = convertToVietnamTime(item.updateAt);
           item.dateBirth = convertToVietnamTime(item.dateBirth);
@@ -231,9 +222,9 @@ export class CustomerService {
         });
         resolve({
           status: "OK",
-          total: totalCustomerCount,
-          totalPage: Math.ceil(totalCustomerCount / limit),
-          data: totalCustomerCount > 0 ? dataCustomer : [],
+          total: totalCount,
+          totalPage: Math.ceil(totalCount / limit),
+          data: totalCount > 0 ? dataCustomer : [],
         });
       } catch (error) {
         console.error("Err Service.getall", error);
@@ -242,60 +233,46 @@ export class CustomerService {
     });
   }
 
-  add(newCustomer: Customer, fileCloudinary: CloudinaryAsset): Promise<any> {
+  add(newDriver: DriverType, fileCloudinary: CloudinaryAsset): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
         const regex = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.(com|vn|org|edu|net)$/;
-        console.log("newCustomer-ser", newCustomer);
-        if (!regex.test(newCustomer.email)) {
-          console.log('"Invalid email format", newCustomer.email);');
+        console.log("newDriver-ser", newDriver);
+        if (!regex.test(newDriver.email)) {
+          console.log('"Invalid email format", newDriver.email);');
           deleteOldFile(fileCloudinary.public_id, "image");
           return reject({
             status: "ERR",
             message: "Invalid email",
           });
         }
-        const hashPass = await bcrypt.hash(newCustomer.password, 10);
-        const sql = "call addCustomer(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        const hashPass = await bcrypt.hash(newDriver.password, 10);
+        const sql = "call addDriver(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         const values = [
-          newCustomer.email,
-          newCustomer.fullName,
-          newCustomer.sex,
+          newDriver.email,
+          newDriver.fullName,
+          newDriver.sex,
           hashPass,
+          newDriver.licenseNumber,
+          newDriver.experienceYears,
           fileCloudinary ? fileCloudinary.secure_url : null,
           fileCloudinary ? fileCloudinary.public_id : null,
-          newCustomer.phone,
-          newCustomer.dateBirth,
-          newCustomer.address,
+          newDriver.phone,
+          newDriver.dateBirth,
+          newDriver.address,
         ];
         const [rows] = (await this.db.execute(sql, values)) as [ResultSetHeader];
-        if (rows.affectedRows === 0) {
+        console.log("affectedRows", rows.affectedRows);
+        if (rows.affectedRows < 1 || !rows.affectedRows) {
           deleteOldFile(fileCloudinary.public_id, "image");
           return reject({
             status: "ERR",
-            message: "Create customer failed",
+            message: "Create driver failed",
           });
         }
         resolve({
           status: "OK",
-          message: "Create customer success",
-        });
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
-
-  save(profile: any, provider: string): Promise<any> {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const { id, email, displayName, photos } = profile;
-        const sql = "call save_customer(?, ?, ?, ?, ?)";
-        const values = [email, id, provider, displayName, photos];
-        await this.db.execute(sql, values);
-        resolve({
-          status: "OK",
-          message: "Save customer success",
+          message: "Create driver success",
         });
       } catch (error) {
         reject(error);

@@ -2,6 +2,8 @@ import { bcrypt } from "bcrypt";
 import { generalAccessToken, generalRefreshToken, verifyRefreshToken } from "../utils/jwt.util";
 import { errorResponse, successResponse } from "../utils/response.util";
 import { Request, Response } from "express";
+import { Result } from "express-validator";
+import { ResultSetHeader } from "mysql2";
 
 interface TokenData {
   id: string;
@@ -47,20 +49,17 @@ export class UserService {
     return rows[0][0];
   }
 
-  login(customerLogin: LoginType): Promise<any> {
+  login(userLogin: LoginType): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
-        const checkPerson = await this.getUserByEmail(customerLogin.email);
+        const checkPerson = await this.getUserByEmail(userLogin.email);
         if (checkPerson === null) {
           resolve({
             status: "ERR",
             message: "The user is not defined",
           });
         } else {
-          const comparePass = await bcrypt.compareSync(
-            customerLogin.password,
-            checkPerson.password
-          );
+          const comparePass = await bcrypt.compareSync(userLogin.password, checkPerson.password);
           if (!comparePass) {
             resolve({
               status: "ERR",
@@ -85,6 +84,19 @@ export class UserService {
             });
           }
         }
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  delete(id: number): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        await this.db.execute("call delete_user(?)", [id]);
+        resolve({
+          status: "OK",
+        });
       } catch (error) {
         reject(error);
       }

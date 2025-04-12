@@ -13,16 +13,5 @@ export interface CustomerType {
   urlPublicImg: string;
   createAt: string; // timestamp
   updateAt: string; // timestamp
-  role: "customer" | "admin" | "user";
-}
-
-export interface CustomerRegister {
-  email: string;
-  password: string;
-  fullName: string;
-}
-
-export interface CustomerLogin {
-  email: string;
-  password: string;
+  role: "customer";
 }

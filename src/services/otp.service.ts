@@ -1,12 +1,13 @@
 import { globalBookTicketsDB } from "../config/db";
 import bcrypt from "bcrypt";
 
-interface OtpData {
+type OtpData = {
   otp: string;
   email: string;
   passwordHash: string;
   fullName: string;
-}
+  role: "customer" | "driver";
+};
 
 interface OtpRecord {
   email: string;
@@ -15,18 +16,25 @@ interface OtpRecord {
   otp: string;
 }
 
-const insertOtp = ({ otp, email, passwordHash, fullName }: OtpData): Promise<{ data: any }> => {
+const insertOtp = ({
+  otp,
+  email,
+  passwordHash,
+  fullName,
+  role,
+}: OtpData): Promise<{ data: any }> => {
   return new Promise(async (resolve, reject) => {
     try {
       const salt = await bcrypt.genSalt(10);
       const hash = await bcrypt.hash(otp, salt);
 
-      const query = "call upsert_otp(?, ?, )";
+      const query = "call upsert_otp(?, ?, ?, ?, ? )";
       const [result] = await globalBookTicketsDB.execute(query, [
         email,
         hash,
         passwordHash,
         fullName,
+        role,
       ]);
 
       resolve({
@@ -61,7 +69,7 @@ const findOtp = async (email: string): Promise<OtpRecord | null> => {
     console.log("length", length);
 
     const [rows] = await globalBookTicketsDB.execute(
-      "SELECT email, name, password, otp FROM otp WHERE email = ?",
+      "SELECT email, full_name, password, otp FROM otp WHERE email = ?",
       [email]
     );
 
