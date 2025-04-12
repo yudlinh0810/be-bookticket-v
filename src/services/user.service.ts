@@ -1,9 +1,5 @@
 import { bcrypt } from "bcrypt";
-import { generalAccessToken, generalRefreshToken, verifyRefreshToken } from "../utils/jwt.util";
-import { errorResponse, successResponse } from "../utils/response.util";
-import { Request, Response } from "express";
-import { Result } from "express-validator";
-import { ResultSetHeader } from "mysql2";
+import { generalAccessToken, generalRefreshToken } from "../utils/jwt.util";
 
 interface TokenData {
   id: string;
