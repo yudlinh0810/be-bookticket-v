@@ -3,7 +3,6 @@ import { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import otpGenerator from "otp-generator";
 import { globalBookTicketsDB } from "../config/db";
 import { sendOtpEmail } from "./email.service";
-import { findOtp, insertOtp, isValidOtp } from "./otp.service";
 import { CloudinaryAsset } from "../@types/cloudinary";
 import { ArrangeType, UserRegister } from "../@types/type";
 import { CustomerType } from "../@types/customer";
@@ -11,6 +10,7 @@ import { convertToVietnamTime } from "../utils/convertTime";
 import deleteOldFile from "../utils/deleteOldFile.util";
 import { UserService } from "./user.service";
 import { generalAccessToken, generalRefreshToken } from "../utils/jwt.util";
+import { OtpService } from "./otp.service";
 
 type Customer = {
   email: string;
@@ -25,6 +25,7 @@ type Customer = {
 };
 
 const userService = new UserService(globalBookTicketsDB);
+const otpService = new OtpService();
 
 export class CustomerService {
   private db;
@@ -71,7 +72,7 @@ export class CustomerService {
         });
 
         const passwordHash = await bcrypt.hash(password, 10);
-        await insertOtp({ otp, email, passwordHash, fullName, role: "customer" });
+        await otpService.insertOtp({ otp, email, passwordHash, fullName, role: "customer" });
         await sendOtpEmail({ email, otp });
 
         resolve({
@@ -87,7 +88,7 @@ export class CustomerService {
   verifyEmail(email: string, otp: string): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
-        const checkOtp = await findOtp(email);
+        const checkOtp = await otpService.findOtp(email);
 
         if (!checkOtp) {
           return resolve({
@@ -96,7 +97,7 @@ export class CustomerService {
           });
         }
 
-        const isValid = await isValidOtp(otp, checkOtp.otp);
+        const isValid = await otpService.isValidOtp(otp, checkOtp.otp);
 
         if (!isValid) {
           return resolve({
