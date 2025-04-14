@@ -3,15 +3,15 @@ import { globalBookTicketsDB } from "../config/db";
 import { UserService } from "../services/user.service";
 import { errorResponse, successResponse } from "../utils/response.util";
 import { verifyRefreshToken } from "../utils/jwt.util";
+import testEmail from "../utils/testEmail";
 
 export class UserController {
   private userService = new UserService(globalBookTicketsDB);
 
-  login = async (req: Request, res: Response): Promise<any> => {
+  login = async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
-      const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
-      const isCheckEmail = reg.test(email);
+      const isCheckEmail = testEmail(email);
 
       if (!email || !password) {
         return res.status(200).json({
@@ -28,15 +28,32 @@ export class UserController {
       }
 
       const response = await this.userService.login(req.body);
-      const { refresh_token, ...newData } = response;
 
-      res.cookie("refresh_token", refresh_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-      return res.status(200).json(newData);
+      if (
+        "access_token" in response &&
+        "refresh_token" in response &&
+        "expirationTime" in response
+      ) {
+        const { access_token, refresh_token, status, expirationTime } = response;
+        res.cookie("access_token", access_token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "none",
+          maxAge: 60 * 60 * 1000,
+          path: "/",
+        });
+
+        res.cookie("refresh_token", refresh_token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "none",
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+          path: "/",
+        });
+        return successResponse(res, { status, expirationTime: expirationTime }, "Login success");
+      } else {
+        return errorResponse(res, response.message, 400);
+      }
     } catch (err) {
       console.log(err);
       return res.status(404).json({
@@ -46,31 +63,44 @@ export class UserController {
     }
   };
 
-  refreshToken = async (req: Request, res: Response): Promise<any> => {
+  refreshToken = async (req: Request, res: Response) => {
     try {
-      const token = req.headers.token?.toString().split(" ")[1];
-      if (!token) {
-        return errorResponse(res, "Token is not defined", 200);
+      const refreshToken = req.cookies.refresh_token;
+
+      if (!refreshToken) return res.status(401).json({ message: "No refresh token provided" });
+
+      const response = await verifyRefreshToken(refreshToken);
+
+      if ("access_token" in response && "expirationTime" in response) {
+        const { access_token, expirationTime } = response;
+
+        res.cookie("access_token", access_token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "none",
+          maxAge: 60 * 60 * 1000,
+          path: "/",
+        });
+
+        res.cookie("access_token_expiration", expirationTime.toString(), {
+          httpOnly: false,
+          secure: true,
+          sameSite: "none",
+          maxAge: 60 * 60 * 1000,
+          path: "/",
+        });
+
+        return res.status(200).json({ message: "Access token refreshed" });
+      } else {
+        return errorResponse(res, response.message, 400);
       }
-
-      const data = await verifyRefreshToken(token);
-      const { refresh_token, ...newData } = data;
-
-      res.cookie("refresh_token", refresh_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-
-      return successResponse(res, newData, "Refresh token success");
     } catch (error) {
       console.log("err refresh token", error);
       return errorResponse(res, "ERR Controller.refreshToken", 404);
     }
   };
 
-  delete = async (req: Request, res: Response): Promise<any> => {
+  delete = async (req: Request, res: Response) => {
     const id = Number(req.params.id);
     try {
       const data = await this.userService.delete(id);
@@ -78,6 +108,27 @@ export class UserController {
     } catch (error) {
       console.log("Controller", error);
       return errorResponse(res, "ERR Controller.deleteUser", 404);
+    }
+  };
+
+  logout = async (req: Request, res: Response) => {
+    try {
+      res.clearCookie("access_token", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        path: "/",
+      });
+      res.clearCookie("refresh_token", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        path: "/",
+      });
+      return successResponse(res, {}, "Logout success");
+    } catch (error) {
+      console.log("Controller", error);
+      return errorResponse(res, "ERR Controller.logout", 404);
     }
   };
 }

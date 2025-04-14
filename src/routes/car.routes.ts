@@ -30,6 +30,8 @@ import {
 } from "../middlewares/uploadHandler";
 import pool from "../config/database";
 import { uploadImage } from "../middlewares/multerConfig";
+import { verifyAccessToken } from "../utils/jwt.util";
+import { authorizeRoles } from "../middlewares/auth.middleware";
 
 const carRouter = express.Router();
 carRouter.post(
@@ -48,16 +50,33 @@ carRouter.put(
   uploadImagesToCloudinary,
   updateCarCTL
 );
-carRouter.post("/add-img", addImgCarCTL);
-carRouter.put("/image/update", uploadImage, uploadImageToCloudinary, updateImgCarCTL);
-carRouter.delete("/image/delete", deleteImgCarCTL);
-carRouter.delete("/delete/:id", deleteCarCTL);
-carRouter.get("/get-all", getAllCarCTL);
-carRouter.get("/detail/:id", getCarByIdCTL);
-carRouter.get("/license-plate/:licensePlate", getCarByLicensePlateCTL);
-carRouter.post("/type/:type", getCarByTypeCTL);
-carRouter.post("/status/:status", getCarByStatusCTL);
-carRouter.post("/type/:type/status/:status", getCarByTypeAndStatusCTL);
+carRouter.post("/add-img", verifyAccessToken, authorizeRoles("admin"), addImgCarCTL);
+carRouter.put(
+  "/image/update",
+  verifyAccessToken,
+  authorizeRoles("admin"),
+  uploadImage,
+  uploadImageToCloudinary,
+  updateImgCarCTL
+);
+carRouter.delete("/image/delete", verifyAccessToken, authorizeRoles("admin"), deleteImgCarCTL);
+carRouter.delete("/delete/:id", verifyAccessToken, authorizeRoles("admin"), deleteCarCTL);
+carRouter.get("/get-all", verifyAccessToken, authorizeRoles("admin"), getAllCarCTL);
+carRouter.get("/detail/:id", verifyAccessToken, authorizeRoles("admin", "customer"), getCarByIdCTL);
+carRouter.get(
+  "/license-plate/:licensePlate",
+  verifyAccessToken,
+  authorizeRoles("admin", "customer"),
+  getCarByLicensePlateCTL
+);
+carRouter.post("/type/:type", verifyAccessToken, authorizeRoles("admin"), getCarByTypeCTL);
+carRouter.post("/status/:status", verifyAccessToken, authorizeRoles("admin"), getCarByStatusCTL);
+carRouter.post(
+  "/type/:type/status/:status",
+  verifyAccessToken,
+  authorizeRoles("admin"),
+  getCarByTypeAndStatusCTL
+);
 // carRouter.get("/get", async (req, res) => {
 //   try {
 //     const client = await pool.connect();

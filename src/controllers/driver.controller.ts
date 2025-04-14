@@ -9,7 +9,7 @@ import { DriverService } from "../services/driver.service";
 export class DriverController {
   private driverService = new DriverService(globalBookTicketsDB);
 
-  register = async (req: Request, res: Response): Promise<any> => {
+  register = async (req: Request, res: Response) => {
     try {
       const { email, password, confirmPassword } = req.body;
       const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
@@ -44,7 +44,7 @@ export class DriverController {
     }
   };
 
-  verifyEmail = async (req: Request, res: Response): Promise<any> => {
+  verifyEmail = async (req: Request, res: Response) => {
     try {
       const { email, otp } = req.body;
       const response = await this.driverService.verifyEmail(email, otp);
@@ -54,7 +54,7 @@ export class DriverController {
     }
   };
 
-  fetch = async (req: Request, res: Response): Promise<any> => {
+  fetch = async (req: Request, res: Response) => {
     const id = Number(req.params.id);
     try {
       const data = await this.driverService.fetch(id);
@@ -64,7 +64,7 @@ export class DriverController {
     }
   };
 
-  update = async (req: Request, res: Response): Promise<any> => {
+  update = async (req: Request, res: Response) => {
     try {
       const id = Number(req.params.id);
       if (!id) return errorResponse(res, "id is required", 404);
@@ -78,7 +78,7 @@ export class DriverController {
     }
   };
 
-  updateImage = async (req: RequestFile, res: Response): Promise<any> => {
+  updateImage = async (req: RequestFile, res: Response) => {
     try {
       const id = Number(req.body.id);
       const file = req.uploadedImage as CloudinaryAsset;
@@ -93,7 +93,7 @@ export class DriverController {
     }
   };
 
-  getAll = async (req: Request, res: Response): Promise<any> => {
+  getAll = async (req: Request, res: Response) => {
     try {
       const limit = Number(req.query.limit) || 10;
       const offset = Number(req.query.offset);
@@ -113,7 +113,7 @@ export class DriverController {
     }
   };
 
-  create = async (req: RequestFile, res: Response): Promise<any> => {
+  create = async (req: RequestFile, res: Response) => {
     try {
       const file = req.uploadedImage as CloudinaryAsset;
       const newDriver = JSON.parse(req.body.data);

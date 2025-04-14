@@ -9,7 +9,7 @@ import { globalBookTicketsDB } from "../config/db";
 export class CustomerController {
   private customerService = new CustomerService(globalBookTicketsDB);
 
-  register = async (req: Request, res: Response): Promise<any> => {
+  register = async (req: Request, res: Response) => {
     try {
       const { email, password, confirmPassword } = req.body;
       const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
@@ -44,7 +44,7 @@ export class CustomerController {
     }
   };
 
-  verifyEmail = async (req: Request, res: Response): Promise<any> => {
+  verifyEmail = async (req: Request, res: Response) => {
     try {
       const { email, otp } = req.body;
       const response = await this.customerService.verifyEmail(email, otp);
@@ -54,7 +54,7 @@ export class CustomerController {
     }
   };
 
-  fetch = async (req: Request, res: Response): Promise<any> => {
+  fetch = async (req: Request, res: Response) => {
     const id = Number(req.params.id);
     try {
       const data = await this.customerService.fetch(id);
@@ -64,7 +64,7 @@ export class CustomerController {
     }
   };
 
-  update = async (req: Request, res: Response): Promise<any> => {
+  update = async (req: Request, res: Response) => {
     try {
       const id = Number(req.params.id);
       if (!id) return errorResponse(res, "id is required", 404);
@@ -78,7 +78,7 @@ export class CustomerController {
     }
   };
 
-  updateImage = async (req: RequestFile, res: Response): Promise<any> => {
+  updateImage = async (req: RequestFile, res: Response) => {
     try {
       const id = Number(req.body.id);
       const file = req.uploadedImage as CloudinaryAsset;
@@ -93,7 +93,7 @@ export class CustomerController {
     }
   };
 
-  getAll = async (req: Request, res: Response): Promise<any> => {
+  getAll = async (req: Request, res: Response) => {
     try {
       const limit = Number(req.query.limit) || 10;
       const offset = Number(req.query.offset);
@@ -113,7 +113,7 @@ export class CustomerController {
     }
   };
 
-  create = async (req: RequestFile, res: Response): Promise<any> => {
+  create = async (req: RequestFile, res: Response) => {
     try {
       const file = req.uploadedImage as CloudinaryAsset;
       const newCustomer = JSON.parse(req.body.data);

@@ -11,6 +11,7 @@ import { UserService } from "./user.service";
 import { generalAccessToken, generalRefreshToken } from "../utils/jwt.util";
 import { DriverType } from "../@types/driver";
 import { OtpService } from "./otp.service";
+import testEmail from "../utils/testEmail";
 
 const userService = new UserService(globalBookTicketsDB);
 const otpService = new OtpService();
@@ -237,9 +238,8 @@ export class DriverService {
   add(newDriver: DriverType, fileCloudinary: CloudinaryAsset): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
-        const regex = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.(com|vn|org|edu|net)$/;
         console.log("newDriver-ser", newDriver);
-        if (!regex.test(newDriver.email)) {
+        if (!testEmail(newDriver.email)) {
           console.log('"Invalid email format", newDriver.email);');
           deleteOldFile(fileCloudinary.public_id, "image");
           return reject({

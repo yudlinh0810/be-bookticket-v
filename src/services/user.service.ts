@@ -1,5 +1,6 @@
-import { bcrypt } from "bcrypt";
+import bcrypt from "bcrypt";
 import { generalAccessToken, generalRefreshToken } from "../utils/jwt.util";
+import { convertTimestamp } from "../utils/convertTimeStamp";
 
 interface TokenData {
   id: string;
@@ -41,11 +42,29 @@ export class UserService {
   }
 
   async getUserByEmail(email: string): Promise<any> {
-    const [rows] = await this.db.execute("select * from user where email = ?", [email]);
-    return rows[0][0];
+    try {
+      const [rows] = await this.db.execute(
+        "select email, password, role from user where email = ?",
+        [email]
+      );
+      return rows[0];
+    } catch (err) {
+      console.error("Query error:", err);
+    }
   }
 
-  login(userLogin: LoginType): Promise<any> {
+  login(userLogin: LoginType): Promise<
+    | {
+        access_token: string;
+        status: string;
+        expirationTime: number;
+        refresh_token: string;
+      }
+    | {
+        status: string;
+        message: string;
+      }
+  > {
     return new Promise(async (resolve, reject) => {
       try {
         const checkPerson = await this.getUserByEmail(userLogin.email);
@@ -63,20 +82,22 @@ export class UserService {
             });
           } else {
             const access_token = generalAccessToken({
-              id: checkPerson?.id,
+              id: checkPerson?.email,
               role: checkPerson?.role,
             });
 
+            const expirationTime = Date.now() + 60 * 60 * 1000;
+
             const refresh_token = generalRefreshToken({
-              id: checkPerson?.id,
+              id: checkPerson?.email,
               role: checkPerson?.role,
             });
 
             resolve({
               status: "OK",
-              message: "Login success",
               access_token,
               refresh_token,
+              expirationTime,
             });
           }
         }

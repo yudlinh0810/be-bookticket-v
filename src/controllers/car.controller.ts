@@ -19,7 +19,7 @@ import { decode } from "punycode";
 import { CloudinaryAsset } from "../@types/cloudinary";
 import { RequestFile, RequestWithProcessedFiles } from "../middlewares/uploadHandler";
 
-export const addCarCTL = async (req: RequestWithProcessedFiles, res: Response): Promise<any> => {
+export const addCarCTL = async (req: RequestWithProcessedFiles, res: Response) => {
   const data = JSON.parse(req.body.data);
   const resultCloudinary = req.processedFiles;
   try {
@@ -30,7 +30,7 @@ export const addCarCTL = async (req: RequestWithProcessedFiles, res: Response): 
   }
 };
 
-export const updateCarCTL = async (req: RequestWithProcessedFiles, res: Response): Promise<any> => {
+export const updateCarCTL = async (req: RequestWithProcessedFiles, res: Response) => {
   const data = JSON.parse(req.body.data);
   const resultCloudinary = req.processedFiles;
   try {
@@ -41,7 +41,7 @@ export const updateCarCTL = async (req: RequestWithProcessedFiles, res: Response
   }
 };
 
-export const deleteCarCTL = async (req: Request, res: Response): Promise<any> => {
+export const deleteCarCTL = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const result = await deleteCarSer(id);
@@ -51,7 +51,7 @@ export const deleteCarCTL = async (req: Request, res: Response): Promise<any> =>
   }
 };
 
-export const getAllCarCTL = async (req: Request, res: Response): Promise<any> => {
+export const getAllCarCTL = async (req: Request, res: Response) => {
   try {
     let { limit, offset } = req.query;
     const pageLimit = parseInt(limit as string) || 5;
@@ -63,7 +63,7 @@ export const getAllCarCTL = async (req: Request, res: Response): Promise<any> =>
   }
 };
 
-export const getCarByIdCTL = async (req: Request, res: Response): Promise<any> => {
+export const getCarByIdCTL = async (req: Request, res: Response) => {
   const id = Number(req.params.id);
   try {
     if (id === 0) return successResponse(res, null, "Car Id not exist!");
@@ -74,7 +74,7 @@ export const getCarByIdCTL = async (req: Request, res: Response): Promise<any> =
   }
 };
 
-export const getCarByLicensePlateCTL = async (req: Request, res: Response): Promise<any> => {
+export const getCarByLicensePlateCTL = async (req: Request, res: Response) => {
   const licensePlate = req.params.licensePlate;
   try {
     const result = await getCarByLicensePlateSer(licensePlate);
@@ -84,7 +84,7 @@ export const getCarByLicensePlateCTL = async (req: Request, res: Response): Prom
   }
 };
 
-export const getCarByTypeCTL = async (req: Request, res: Express.Response): Promise<any> => {
+export const getCarByTypeCTL = async (req: Request, res: Express.Response) => {
   if (!req.params.type || !typeMap[req.params.type]) {
     return errorResponse(res, "Invalid car type", 400);
   }
@@ -97,7 +97,7 @@ export const getCarByTypeCTL = async (req: Request, res: Express.Response): Prom
   }
 };
 
-export const getCarByStatusCTL = async (req: Request, res: Express.Response): Promise<any> => {
+export const getCarByStatusCTL = async (req: Request, res: Express.Response) => {
   if (!req.params.status || !statusMap[req.params.status]) {
     return errorResponse(res, "Invalid car status", 400);
   }
@@ -110,10 +110,7 @@ export const getCarByStatusCTL = async (req: Request, res: Express.Response): Pr
   }
 };
 
-export const getCarByTypeAndStatusCTL = async (
-  req: RequestWithCar,
-  res: Express.Response
-): Promise<any> => {
+export const getCarByTypeAndStatusCTL = async (req: RequestWithCar, res: Express.Response) => {
   if (
     !req.params.type ||
     !req.params.status ||

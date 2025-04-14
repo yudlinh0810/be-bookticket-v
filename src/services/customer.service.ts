@@ -11,6 +11,7 @@ import deleteOldFile from "../utils/deleteOldFile.util";
 import { UserService } from "./user.service";
 import { generalAccessToken, generalRefreshToken } from "../utils/jwt.util";
 import { OtpService } from "./otp.service";
+import testEmail from "../utils/testEmail";
 
 type Customer = {
   email: string;
@@ -246,9 +247,7 @@ export class CustomerService {
   add(newCustomer: Customer, fileCloudinary: CloudinaryAsset): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
-        const regex = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.(com|vn|org|edu|net)$/;
-        console.log("newCustomer-ser", newCustomer);
-        if (!regex.test(newCustomer.email)) {
+        if (!testEmail(newCustomer.email)) {
           console.log('"Invalid email format", newCustomer.email);');
           deleteOldFile(fileCloudinary.public_id, "image");
           return reject({
