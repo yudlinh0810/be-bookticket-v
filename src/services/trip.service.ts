@@ -7,8 +7,11 @@ export class TripService {
 
   async getAllCar() {
     try {
-      const [rows] = await this.db.execute("select id, license_plate as licensePlate from car");
-      if (rows > 0) {
+      const [rows] = await this.db.execute(
+        "select id, license_plate as licensePlate, type from car"
+      );
+      if (rows.length > 0) {
+        console.log("cars", rows[0]);
         return rows;
       } else {
         return null;
@@ -20,10 +23,10 @@ export class TripService {
   async getAllDriver() {
     try {
       const [rows] = await this.db.execute(
-        "select id, full_name as fullName from user where role = ?",
-        ["driver"]
+        "select id, full_name as fullName from user where role = 'driver'"
       );
-      if (rows > 0) {
+      if (rows.length > 0) {
+        console.log("driver", rows[0]);
         return rows;
       } else {
         return null;
@@ -35,10 +38,10 @@ export class TripService {
   async getAllCoDriver() {
     try {
       const [rows] = await this.db.execute(
-        `select id, full_name as fullName from user where role = ?`,
-        ["co-driver"]
+        `select id, full_name as fullName from user where role = 'co-driver'`
       );
-      if (rows > 0) {
+      if (rows.length > 0) {
+        console.log("co-driver", rows[0]);
         return rows;
       } else {
         return null;
@@ -50,7 +53,8 @@ export class TripService {
   async getAllLocation() {
     try {
       const [rows] = await this.db.execute("select id, name from location");
-      if (rows > 0) {
+      if (rows.length > 0) {
+        console.log("location", rows[0]);
         return rows;
       } else {
         return null;
@@ -68,9 +72,6 @@ export class TripService {
         this.getAllCoDriver(),
         this.getAllLocation(),
       ]);
-      console.log("cars", cars);
-      console.log("drivers", drivers);
-      console.log("co-drivers", coDrivers), console.log("locations", locations);
       return { cars, drivers, coDrivers, locations };
     } catch (error) {
       return error;

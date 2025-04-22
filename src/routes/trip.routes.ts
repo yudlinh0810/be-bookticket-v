@@ -4,6 +4,6 @@ import express from "express";
 const router = express.Router();
 const tripController = new TripController();
 
-router.get("/form-data", tripController.getAllCar);
+router.get("/form-data", tripController.getFormData);
 
 export default router;

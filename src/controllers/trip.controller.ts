@@ -1,16 +1,17 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 import { bookBusTicketsDB } from "../config/db";
 import { TripService } from "../services/trip.service";
-import { successResponse } from "../utils/response.util";
+import { errorResponse, successResponse } from "../utils/response.util";
 export class TripController {
   private tripService = new TripService(bookBusTicketsDB);
 
-  getAllCar = async (res: Response) => {
+  getFormData = async (req: Request, res: Response) => {
     try {
       const result = await this.tripService.getFormData();
       console.log("result", result);
-      successResponse(res, result, "et form-data trip success");
+      successResponse(res, 200, result);
     } catch (error) {
+      errorResponse(res, "err getFormData");
       console.log("err", error);
     }
   };
