@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
-import { globalBookTicketsDB } from "../config/db";
+import { bookBusTicketsDB } from "../config/db";
 import { UserService } from "../services/user.service";
 import { errorResponse, successResponse } from "../utils/response.util";
 import { verifyRefreshToken } from "../utils/jwt.util";
 import testEmail from "../utils/testEmail";
 
 export class UserController {
-  private userService = new UserService(globalBookTicketsDB);
+  private userService = new UserService(bookBusTicketsDB);
 
   login = async (req: Request, res: Response) => {
     try {
@@ -14,14 +14,14 @@ export class UserController {
       const isCheckEmail = testEmail(email);
 
       if (!email || !password) {
-        return res.status(200).json({
+        res.status(200).json({
           status: "ERR",
           message: "The input is required",
         });
       }
 
       if (!isCheckEmail) {
-        return res.status(200).json({
+        res.status(200).json({
           status: "ERR",
           message: "Email is not in correct format",
         });
@@ -50,13 +50,13 @@ export class UserController {
           maxAge: 7 * 24 * 60 * 60 * 1000,
           path: "/",
         });
-        return successResponse(res, { status, expirationTime: expirationTime }, "Login success");
+        successResponse(res, 200, { status, expirationTime: expirationTime });
       } else {
-        return errorResponse(res, response.message, 400);
+        errorResponse(res, response.message, 400);
       }
     } catch (err) {
       console.log(err);
-      return res.status(404).json({
+      res.status(404).json({
         message: "Controller.login err",
         error: err,
       });
@@ -67,7 +67,7 @@ export class UserController {
     try {
       const refreshToken = req.cookies.refresh_token;
 
-      if (!refreshToken) return res.status(401).json({ message: "No refresh token provided" });
+      if (!refreshToken) res.status(401).json({ message: "No refresh token provided" });
 
       const response = await verifyRefreshToken(refreshToken);
 
@@ -90,13 +90,13 @@ export class UserController {
           path: "/",
         });
 
-        return res.status(200).json({ message: "Access token refreshed" });
+        res.status(200).json({ message: "Access token refreshed" });
       } else {
-        return errorResponse(res, response.message, 400);
+        errorResponse(res, response.message, 400);
       }
     } catch (error) {
       console.log("err refresh token", error);
-      return errorResponse(res, "ERR Controller.refreshToken", 404);
+      errorResponse(res, "ERR Controller.refreshToken", 404);
     }
   };
 
@@ -104,10 +104,10 @@ export class UserController {
     const id = Number(req.params.id);
     try {
       const data = await this.userService.delete(id);
-      return successResponse(res, data, "Delete user success");
+      successResponse(res, data, "Delete user success");
     } catch (error) {
       console.log("Controller", error);
-      return errorResponse(res, "ERR Controller.deleteUser", 404);
+      errorResponse(res, "ERR Controller.deleteUser", 404);
     }
   };
 
@@ -125,10 +125,10 @@ export class UserController {
         sameSite: "none",
         path: "/",
       });
-      return successResponse(res, {}, "Logout success");
+      successResponse(res, 200, {});
     } catch (error) {
       console.log("Controller", error);
-      return errorResponse(res, "ERR Controller.logout", 404);
+      errorResponse(res, "ERR Controller.logout", 404);
     }
   };
 }

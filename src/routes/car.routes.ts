@@ -1,28 +1,5 @@
 import express from "express";
-import {
-  addCarCTL,
-  addImgCarCTL,
-  deleteCarCTL,
-  deleteImgCarCTL,
-  getAllCarCTL,
-  getCarByIdCTL,
-  getCarByLicensePlateCTL,
-  getCarByStatusCTL,
-  getCarByTypeAndStatusCTL,
-  getCarByTypeCTL,
-  updateCarCTL,
-  updateImgCarCTL,
-} from "../controllers/car.controller";
-import {
-  validateCreateCar,
-  validateCreateCarMiddleware,
-  validateUpdateCar,
-  validateUpdateCarMiddleware,
-} from "../middlewares/car.middleware";
-import { validateToken } from "../middlewares/user.middleware";
-import { RequestWithCar } from "../@types/car.type";
-import { successResponse } from "../utils/response.util";
-import { CarStatus, CarType } from "../@types/car.type";
+
 import {
   uploadImages,
   uploadImagesToCloudinary,
@@ -32,15 +9,18 @@ import pool from "../config/database";
 import { uploadImage } from "../middlewares/multerConfig";
 import { verifyAccessToken } from "../utils/jwt.util";
 import { authorizeRoles } from "../middlewares/auth.middleware";
+import { CarController } from "../controllers/car.controller";
 
 const carRouter = express.Router();
+const carController = new CarController();
+
 carRouter.post(
   "/add",
   // validateCreateCar,
   // validateCreateCarMiddleware,
   uploadImages,
   uploadImagesToCloudinary,
-  addCarCTL
+  carController.addCar
 );
 carRouter.put(
   "/update",
@@ -48,35 +28,43 @@ carRouter.put(
   // validateUpdateCarMiddleware,
   uploadImages,
   uploadImagesToCloudinary,
-  updateCarCTL
+  carController.updateCar
 );
-carRouter.post("/add-img", verifyAccessToken, authorizeRoles("admin"), addImgCarCTL);
+// carRouter.post("/add-img", verifyAccessToken, authorizeRoles("admin"), carController.addImageCar);
 carRouter.put(
   "/image/update",
   verifyAccessToken,
   authorizeRoles("admin"),
   uploadImage,
   uploadImageToCloudinary,
-  updateImgCarCTL
+  carController.updateImgCar
 );
-carRouter.delete("/image/delete", verifyAccessToken, authorizeRoles("admin"), deleteImgCarCTL);
-carRouter.delete("/delete/:id", verifyAccessToken, authorizeRoles("admin"), deleteCarCTL);
-carRouter.get("/get-all", verifyAccessToken, authorizeRoles("admin"), getAllCarCTL);
-carRouter.get("/detail/:id", verifyAccessToken, authorizeRoles("admin", "customer"), getCarByIdCTL);
-carRouter.get(
-  "/license-plate/:licensePlate",
-  verifyAccessToken,
-  authorizeRoles("admin", "customer"),
-  getCarByLicensePlateCTL
-);
-carRouter.post("/type/:type", verifyAccessToken, authorizeRoles("admin"), getCarByTypeCTL);
-carRouter.post("/status/:status", verifyAccessToken, authorizeRoles("admin"), getCarByStatusCTL);
-carRouter.post(
-  "/type/:type/status/:status",
+carRouter.delete(
+  "/image/delete",
   verifyAccessToken,
   authorizeRoles("admin"),
-  getCarByTypeAndStatusCTL
+  carController.deleteImgCar
 );
+carRouter.delete(
+  "/delete/:id",
+  verifyAccessToken,
+  authorizeRoles("admin"),
+  carController.deleteCar
+);
+carRouter.get("/get-all", verifyAccessToken, authorizeRoles("admin"), carController.getAllCar);
+// carRouter.get(
+//   "/detail/:id",
+//   verifyAccessToken,
+//   authorizeRoles("admin", "customer"),
+//   carController.getCarById
+// );
+carRouter.get(
+  "/detail/:licensePlate",
+  verifyAccessToken,
+  authorizeRoles("admin", "customer"),
+  carController.getCarByLicensePlate
+);
+
 // carRouter.get("/get", async (req, res) => {
 //   try {
 //     const client = await pool.connect();

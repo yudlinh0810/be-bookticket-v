@@ -28,9 +28,7 @@ export const verifyAccessToken = async (
 
   try {
     const decode = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
-    console.log("decode", decode);
     req.user = decode;
-    console.log("req.user", req.user);
     next();
   } catch (error) {
     res.status(401).json({ message: "Unauthorized" });

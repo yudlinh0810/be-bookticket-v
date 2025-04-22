@@ -1,6 +1,5 @@
 import bcrypt from "bcrypt";
 import { generalAccessToken, generalRefreshToken } from "../utils/jwt.util";
-import { convertTimestamp } from "../utils/convertTimeStamp";
 
 interface TokenData {
   id: string;

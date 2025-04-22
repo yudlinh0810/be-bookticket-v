@@ -8,7 +8,7 @@ export interface Car {
   capacity?: number;
   images: Image[];
   type?: CarType;
-  // status: "Sắp khởi hành" | "Đang chạy" | "Bảo trì";
+  status?: "Sắp khởi hành" | "Đang chạy" | "Bảo trì";
   createAt?: string; // timestamp
   updateAt?: string;
 }

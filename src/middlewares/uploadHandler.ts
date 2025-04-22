@@ -79,7 +79,7 @@ const uploadImagesToCloudinary = async (
       return next();
     }
     let files = req.files as Express.Multer.File[];
-    let bodyData;
+    const { indexIsMain } = req.body.data;
     // try {
     //   bodyData = JSON.parse(req.body?.data || "{}");
     //   if (!bodyData.email) return next("Email is required");
@@ -135,28 +135,20 @@ const uploadImagesToCloudinary = async (
         allowedFormats,
         "image"
       );
-
-      if (bodyData.urlPublicImg) {
-        await deleteOldFile(bodyData.urlPublicImg, "image");
-      }
       req.processedFile = result;
       return next();
     }
 
-    // Delete old images (if any)
-    // if (public_img_ids && Array.isArray(public_img_ids)) {
-    //   await Promise.all(public_img_ids.map((public_id) => deleteOldFile(public_id, "image")));
-    // }
-
-    // req.processedFiles.forEach((file, index) => {
-    //   console.log(`req.files[${index}]: ${uploadImages[index]};`);
-    //   file.cloudinaryImages = [uploadImages[index]];
-    // });
-
-    req.processedFiles = uploadImages.map((image, index) => ({
-      ...req.files[index],
-      cloudinaryImages: [image],
-    })) as CloudinaryAsset[];
+    req.processedFiles = uploadImages.map((image, index) => {
+      const fileData: any = {
+        ...req.files[index],
+        cloudinaryImages: [image],
+      };
+      if (index === indexIsMain) {
+        fileData.isMain = 1;
+      }
+      return fileData;
+    }) as CloudinaryAsset[];
 
     next();
   } catch (error) {
@@ -174,21 +166,13 @@ const uploadImageToCloudinary = async (req: RequestFile, res: Response, next: Ne
     let bodyData;
     try {
       bodyData = JSON.parse(req.body?.data || "{}");
-      // if (!bodyData.email) return next("Email is required");
     } catch (error) {
       return next("Invalid JSON data format");
     }
 
     const { role } = bodyData;
 
-    // if (!role) {
-    //   return next("Missing role");
-    // }
-
     const folder = getCloudinaryFolder(role);
-    // if (!folder) {
-    //   return next("The user does not exist");
-    // }
 
     const allowedFormats = ["png", "jpg", "jpeg"];
 

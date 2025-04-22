@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import otpGenerator from "otp-generator";
-import { globalBookTicketsDB } from "../config/db";
+import { bookBusTicketsDB } from "../config/db";
 import { sendOtpEmail } from "./email.service";
 import { CloudinaryAsset } from "../@types/cloudinary";
 import { ArrangeType, UserRegister } from "../@types/type";
@@ -9,11 +9,11 @@ import { convertToVietnamTime } from "../utils/convertTime";
 import deleteOldFile from "../utils/deleteOldFile.util";
 import { UserService } from "./user.service";
 import { generalAccessToken, generalRefreshToken } from "../utils/jwt.util";
-import { DriverType } from "../@types/driver";
+import { ModelDriver } from "../models/user";
 import { OtpService } from "./otp.service";
 import testEmail from "../utils/testEmail";
 
-const userService = new UserService(globalBookTicketsDB);
+const userService = new UserService(bookBusTicketsDB);
 const otpService = new OtpService();
 
 export class DriverService {
@@ -122,7 +122,7 @@ export class DriverService {
   fetch(id: number): Promise<object> {
     return new Promise(async (resolve, reject) => {
       try {
-        const [rows] = await this.db.execute("call fetch_driver(?)", [id]);
+        const [rows] = await this.db.execute("call fetchDriver(?)", [id]);
         if (rows[0].length === 0) {
           resolve({
             status: "ERR",
@@ -130,7 +130,7 @@ export class DriverService {
           });
         }
 
-        let detailDriver: DriverType = rows[0][0];
+        let detailDriver: ModelDriver = rows[0][0];
 
         detailDriver.createAt = convertToVietnamTime(detailDriver.createAt);
         detailDriver.updateAt = convertToVietnamTime(detailDriver.updateAt);
@@ -145,11 +145,11 @@ export class DriverService {
     });
   }
 
-  update(id: number, updateDriver: DriverType): Promise<any> {
+  update(id: number, updateDriver: ModelDriver): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
         const hashPass = await bcrypt.hash(updateDriver.password, 10);
-        const sql = "call update_driver( ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        const sql = "call updateDriver( ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         const values = [
           id,
           updateDriver.fullName,
@@ -180,7 +180,7 @@ export class DriverService {
       try {
         const { secure_url, public_id } = fileCloudinary;
 
-        const sql = "call update_image_user( ?, ?, ?)";
+        const sql = "call updateImageUser( ?, ?, ?)";
         const values = [id, secure_url, public_id];
 
         const [rows] = (await this.db.execute(sql, values)) as [ResultSetHeader];
@@ -211,12 +211,12 @@ export class DriverService {
     return new Promise(async (resolve, reject) => {
       try {
         const totalCount = await this.total();
-        const [row] = await this.db.execute("call get_all_driver(?, ?, ?)", [
+        const [row] = await this.db.execute("call getDrivers(?, ?, ?)", [
           limit,
           offset,
           arrangeType,
         ]);
-        let dataCustomer: DriverType[] = row[0].map((item: DriverType) => {
+        let dataCustomer: ModelDriver[] = row[0].map((item: ModelDriver) => {
           item.createAt = convertToVietnamTime(item.createAt);
           item.updateAt = convertToVietnamTime(item.updateAt);
           item.dateBirth = convertToVietnamTime(item.dateBirth);
@@ -235,7 +235,7 @@ export class DriverService {
     });
   }
 
-  add(newDriver: DriverType, fileCloudinary: CloudinaryAsset): Promise<any> {
+  add(newDriver: ModelDriver, fileCloudinary: CloudinaryAsset): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
         console.log("newDriver-ser", newDriver);

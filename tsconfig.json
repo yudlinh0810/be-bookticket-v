@@ -21,6 +21,6 @@
     "typeRoots": ["./node_modules/@types", "./@types"],
     "types": ["node", "express"]
   },
-  "include": ["src/**/*.ts", "@types/express.d.ts"],
+  "include": ["src/**/*.ts", "@types/express.d.ts", "src/routes/trip.routests"],
   "exclude": ["node_modules", "dist"]
 }
