@@ -6,6 +6,7 @@ import locationRouter from "./location.routes";
 import userRouter from "./user.routes";
 import driverRoute from "./driver.routes";
 import coDriverRoute from "./coDriver.route";
+import adminRoute from "./admin.routes";
 import tripRoute from "./trip.routes";
 
 const routes = (app: express.Application): void => {
@@ -16,6 +17,7 @@ const routes = (app: express.Application): void => {
   app.use("/api/bus", busRouter);
   app.use("/api/driver", driverRoute);
   app.use("/api/co-driver", coDriverRoute);
+  app.use("/api/admin", adminRoute);
   app.use("/api/trip", tripRoute);
 
   // Route cho các yêu cầu không tìm thấy
