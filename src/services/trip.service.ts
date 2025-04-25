@@ -11,7 +11,6 @@ export class TripService {
         "select id, license_plate as licensePlate, type from car"
       );
       if (rows.length > 0) {
-        console.log("cars", rows[0]);
         return rows;
       } else {
         return null;
@@ -23,10 +22,9 @@ export class TripService {
   async getAllDriver() {
     try {
       const [rows] = await this.db.execute(
-        "select id, full_name as fullName from user where role = 'driver'"
+        "select id, full_name as fullName, phone from user where role = 'driver'"
       );
       if (rows.length > 0) {
-        console.log("driver", rows[0]);
         return rows;
       } else {
         return null;
@@ -38,10 +36,9 @@ export class TripService {
   async getAllCoDriver() {
     try {
       const [rows] = await this.db.execute(
-        `select id, full_name as fullName from user where role = 'co-driver'`
+        `select id, full_name as fullName, phone from user where role = 'co-driver'`
       );
       if (rows.length > 0) {
-        console.log("co-driver", rows[0]);
         return rows;
       } else {
         return null;
@@ -54,7 +51,6 @@ export class TripService {
     try {
       const [rows] = await this.db.execute("select id, name from location");
       if (rows.length > 0) {
-        console.log("location", rows[0]);
         return rows;
       } else {
         return null;

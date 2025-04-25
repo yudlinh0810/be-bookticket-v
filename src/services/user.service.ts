@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { generalAccessToken, generalRefreshToken } from "../utils/jwt.util";
+import { generalAccessToken, generalRefreshToken } from "../services/auth.service";
 
 interface TokenData {
   id: string;

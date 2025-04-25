@@ -8,7 +8,7 @@ import { ArrangeType, UserRegister } from "../@types/type";
 import { convertToVietnamTime } from "../utils/convertTime";
 import deleteOldFile from "../utils/deleteOldFile.util";
 import { UserService } from "./user.service";
-import { generalAccessToken, generalRefreshToken } from "../utils/jwt.util";
+import { generalAccessToken, generalRefreshToken } from "../services/auth.service";
 import { ModelDriver } from "../models/user";
 import { OtpService } from "./otp.service";
 import testEmail from "../utils/testEmail";

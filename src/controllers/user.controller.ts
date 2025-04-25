@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { bookBusTicketsDB } from "../config/db";
 import { UserService } from "../services/user.service";
 import { errorResponse, successResponse } from "../utils/response.util";
-import { verifyRefreshToken } from "../utils/jwt.util";
+import { verifyRefreshToken } from "../services/auth.service";
 import testEmail from "../utils/testEmail";
 
 export class UserController {

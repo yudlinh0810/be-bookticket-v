@@ -8,7 +8,6 @@ export class TripController {
   getFormData = async (req: Request, res: Response) => {
     try {
       const result = await this.tripService.getFormData();
-      console.log("result", result);
       successResponse(res, 200, result);
     } catch (error) {
       errorResponse(res, "err getFormData");

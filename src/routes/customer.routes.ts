@@ -4,7 +4,7 @@ import { uploadImageToCloudinary } from "../middlewares/uploadHandler";
 import { uploadImage } from "../middlewares/multerConfig";
 import { CustomerController } from "../controllers/customer.controller";
 import { UserController } from "../controllers/user.controller";
-import { verifyAccessToken } from "../utils/jwt.util";
+import { verifyAccessToken } from "../services/auth.service";
 import { authorizeRoles } from "../middlewares/auth.middleware";
 
 const router = express.Router();

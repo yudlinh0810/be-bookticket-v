@@ -7,7 +7,7 @@ import {
 } from "../middlewares/uploadHandler";
 import pool from "../config/database";
 import { uploadImage } from "../middlewares/multerConfig";
-import { verifyAccessToken } from "../utils/jwt.util";
+import { verifyAccessToken } from "../services/auth.service";
 import { authorizeRoles } from "../middlewares/auth.middleware";
 import { CarController } from "../controllers/car.controller";
 

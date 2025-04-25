@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyAccessToken } from "../utils/jwt.util";
+import { verifyAccessToken } from "../services/auth.service";
 import { authorizeRoles } from "../middlewares/auth.middleware";
 import { AdminController } from "../controllers/admin.controller";
 

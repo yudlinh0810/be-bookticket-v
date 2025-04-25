@@ -5,7 +5,7 @@ import {
   getAllLocationControl,
   updateLocationControl,
 } from "../controllers/location.controller";
-import { verifyAccessToken } from "../utils/jwt.util";
+import { verifyAccessToken } from "../services/auth.service";
 import { authorizeRoles } from "../middlewares/auth.middleware";
 
 const route = express.Router();

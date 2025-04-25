@@ -1,6 +1,6 @@
 import express from "express";
 import { CoDriverController } from "../controllers/coDriver.controller";
-import { verifyAccessToken } from "../utils/jwt.util";
+import { verifyAccessToken } from "../services/auth.service";
 import { authorizeRoles } from "../middlewares/auth.middleware";
 import { uploadImage } from "../middlewares/multerConfig";
 import { uploadImageToCloudinary } from "../middlewares/uploadHandler";
