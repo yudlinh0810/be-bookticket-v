@@ -17,7 +17,9 @@ export class TripController {
 
   add = async (req: Request, res: Response) => {
     try {
-      console.log("formData", req.body.seats);
+      const { form, seats } = req.body;
+      const result = await this.tripService.add(form, seats);
+      successResponse(res, 200, result);
     } catch (error) {
       console.log("err", error);
       errorResponse(res, "err add trip");

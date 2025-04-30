@@ -1,4 +1,6 @@
+import { ResultSetHeader } from "mysql2";
 import { Trip } from "../@types/trip";
+import { Seat } from "../models/seat";
 
 export class TripService {
   private db;
@@ -63,11 +65,105 @@ export class TripService {
     }
   };
 
-  add = async (newTrip: Trip) => {
+  add = async (newTrip: Trip, newSeats: Seat[]) => {
+    const conn = await this.db.getConnection();
     try {
-      console.log("trip", newTrip);
+      await conn.beginTransaction();
+
+      const {
+        tripName,
+        carId,
+        driverId,
+        coDrivers,
+        departureId,
+        arrivalId,
+        price,
+        startTime,
+        endTime,
+      } = newTrip;
+      console.log("departureTime", startTime);
+      console.log("arrivalTime", endTime);
+      const valuesTrip = [
+        carId,
+        driverId,
+        tripName,
+        departureId,
+        startTime,
+        arrivalId,
+        endTime,
+        "sẵn sàng",
+        price,
+      ];
+      console.log("newTrip", newTrip);
+      const [resultTrip] = (await conn.execute(
+        "call addTrip(?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        valuesTrip
+      )) as [ResultSetHeader];
+
+      const newTripId = resultTrip[0][0].tripId;
+      console.log("tripId", newTripId);
+
+      if (resultTrip.affectedRows <= 0) {
+        await conn.rollback();
+        return {
+          status: "ERR",
+          message: "Create Trip failed",
+        };
+      } else {
+        const tripCoDriverSQL = "call addTripCoDriver(?, ?)";
+        if (coDrivers.length > 0) {
+          for (const coDriver of coDrivers) {
+            const [resultTCD] = (await conn.execute(tripCoDriverSQL, [newTripId, coDriver.id])) as [
+              ResultSetHeader
+            ];
+            if (resultTCD.affectedRows <= 0) {
+              await conn.rollback();
+              return {
+                status: "ERR",
+                message: "Add Trip Co-driver failed",
+              };
+            }
+          }
+        }
+
+        const seatSQL = "call addSeat(?, ?, ?, ?)";
+        if (newSeats.length > 0) {
+          for (const seat of newSeats) {
+            const valuesSeat = [
+              newTripId ?? null,
+              seat.position ?? null,
+              seat.status ?? null,
+              seat.floor ?? null,
+            ];
+            const [resultTCD] = (await conn.execute(seatSQL, valuesSeat)) as [ResultSetHeader];
+            if (resultTCD.affectedRows <= 0) {
+              await conn.rollback();
+              return {
+                status: "ERR",
+                message: "Add seat failed",
+              };
+            }
+          }
+        }
+      }
+
+      await conn.commit();
+
+      return {
+        status: "OK",
+        message: "Add Trip success",
+        tripId: newTripId,
+      };
     } catch (error) {
-      return error;
+      await conn.rollback();
+      console.log("err", error);
+      return {
+        status: "ERR",
+        message: "Unexpected server error",
+        error: error instanceof Error ? error.message : String(error),
+      };
+    } finally {
+      conn.release();
     }
   };
 }
