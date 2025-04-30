@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { bookBusTicketsDB } from "../config/db";
-import { TripService } from "../services/trip.service";
+import TripService from "../services/trip.service";
 import { errorResponse, successResponse } from "../utils/response.util";
 export class TripController {
   private tripService = new TripService(bookBusTicketsDB);
@@ -10,8 +10,17 @@ export class TripController {
       const result = await this.tripService.getFormData();
       successResponse(res, 200, result);
     } catch (error) {
-      errorResponse(res, "err getFormData");
       console.log("err", error);
+      errorResponse(res, "err getFormData");
+    }
+  };
+
+  add = async (req: Request, res: Response) => {
+    try {
+      console.log("formData", req.body.seats);
+    } catch (error) {
+      console.log("err", error);
+      errorResponse(res, "err add trip");
     }
   };
 }

@@ -73,31 +73,12 @@ const uploadImagesToCloudinary = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log("data", req.body.data);
   try {
     if (!req.files || req.files.length === 0) {
       return next();
     }
     let files = req.files as Express.Multer.File[];
     const { indexIsMain } = req.body.data;
-    // try {
-    //   bodyData = JSON.parse(req.body?.data || "{}");
-    //   if (!bodyData.email) return next("Email is required");
-    // } catch (error) {
-    //   return next("Invalid JSON data format");
-    // }
-
-    // const { role } = bodyData;
-
-    // if (!role) {
-    //   return next("Missing role");
-    // }
-
-    // const folder = getCloudinaryFolder(role);
-
-    // if (!folder) {
-    //   return next("The user does not exist");
-    // }
 
     const folder = "book-bus-ticket/image/car";
 

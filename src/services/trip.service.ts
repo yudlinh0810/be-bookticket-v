@@ -1,3 +1,5 @@
+import { Trip } from "../@types/trip";
+
 export class TripService {
   private db;
 
@@ -5,7 +7,7 @@ export class TripService {
     this.db = db;
   }
 
-  async getAllCar() {
+  getAllCar = async () => {
     try {
       const [rows] = await this.db.execute(
         "select id, license_plate as licensePlate, type from car"
@@ -18,8 +20,8 @@ export class TripService {
     } catch (error) {
       console.log("err", error);
     }
-  }
-  async getAllDriver() {
+  };
+  getAllDriver = async () => {
     try {
       const [rows] = await this.db.execute(
         "select id, full_name as fullName, phone from user where role = 'driver'"
@@ -32,8 +34,8 @@ export class TripService {
     } catch (error) {
       console.log("err", error);
     }
-  }
-  async getAllCoDriver() {
+  };
+  getAllCoDriver = async () => {
     try {
       const [rows] = await this.db.execute(
         `select id, full_name as fullName, phone from user where role = 'co-driver'`
@@ -46,31 +48,28 @@ export class TripService {
     } catch (error) {
       console.log("err", error);
     }
-  }
-  async getAllLocation() {
-    try {
-      const [rows] = await this.db.execute("select id, name from location");
-      if (rows.length > 0) {
-        return rows;
-      } else {
-        return null;
-      }
-    } catch (error) {
-      console.log("err", error);
-    }
-  }
+  };
 
-  async getFormData() {
+  getFormData = async () => {
     try {
-      const [cars, drivers, coDrivers, locations] = await Promise.all([
+      const [cars, drivers, coDrivers] = await Promise.all([
         this.getAllCar(),
         this.getAllDriver(),
         this.getAllCoDriver(),
-        this.getAllLocation(),
       ]);
-      return { cars, drivers, coDrivers, locations };
+      return { cars, drivers, coDrivers };
     } catch (error) {
       return error;
     }
-  }
+  };
+
+  add = async (newTrip: Trip) => {
+    try {
+      console.log("trip", newTrip);
+    } catch (error) {
+      return error;
+    }
+  };
 }
+
+export default TripService;

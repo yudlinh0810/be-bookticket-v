@@ -1,4 +1,4 @@
-interface Trip {
+export interface Trip {
   id: number;
   car_id: number;
   driver_id: number;
