@@ -1,6 +1,7 @@
 import { ResultSetHeader } from "mysql2";
-import { Trip } from "../@types/trip";
+import { TripFormData } from "../@types/trip";
 import { Seat } from "../models/seat";
+import { ArrangeType } from "../@types/type";
 
 export class TripService {
   private db;
@@ -65,7 +66,7 @@ export class TripService {
     }
   };
 
-  add = async (newTrip: Trip, newSeats: Seat[]) => {
+  add = async (newTrip: TripFormData, newSeats: Seat[]) => {
     const conn = await this.db.getConnection();
     try {
       await conn.beginTransaction();
@@ -164,6 +165,33 @@ export class TripService {
       };
     } finally {
       conn.release();
+    }
+  };
+
+  getAll = async (
+    limit: number,
+    offset: number,
+    arrangeType: ArrangeType,
+    licensePlateSearch: string
+  ) => {
+    try {
+      const [rows] = await this.db.execute(`call getAllTrip(?, ?, ?, ?)`, [
+        limit,
+        offset,
+        arrangeType,
+        licensePlateSearch,
+      ]);
+      if (rows.length > 0) {
+        return {
+          status: "OK",
+          message: "Get all trip success",
+          data: rows[0],
+        };
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.log("err", error);
     }
   };
 }

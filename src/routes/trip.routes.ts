@@ -8,5 +8,6 @@ const tripController = new TripController();
 
 router.get("/form-data", verifyAccessToken, authorizeRoles("admin"), tripController.getFormData);
 router.post("/add", verifyAccessToken, authorizeRoles("admin"), tripController.add);
+router.get("/get-all", verifyAccessToken, authorizeRoles("admin"), tripController.getAll);
 
 export default router;

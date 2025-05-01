@@ -206,15 +206,17 @@ export class DriverService {
   getAll(
     limit: number,
     offset: number,
-    arrangeType: ArrangeType
+    arrangeType: ArrangeType,
+    phoneSearch: string
   ): Promise<{ status: string; total: number; totalPage: number; data: object }> {
     return new Promise(async (resolve, reject) => {
       try {
         const totalCount = await this.total();
-        const [row] = await this.db.execute("call getDrivers(?, ?, ?)", [
+        const [row] = await this.db.execute("call getDrivers(?, ?, ?, ?)", [
           limit,
           offset,
           arrangeType,
+          phoneSearch,
         ]);
         let dataCustomer: ModelDriver[] = row[0].map((item: ModelDriver) => {
           item.createAt = convertToVietnamTime(item.createAt);

@@ -9,7 +9,7 @@ import { ModelCustomer } from "../models/user";
 import { convertToVietnamTime } from "../utils/convertTime";
 import deleteOldFile from "../utils/deleteOldFile.util";
 import { UserService } from "./user.service";
-import { generalAccessToken, generalRefreshToken } from "../services/auth.service";;
+import { generalAccessToken, generalRefreshToken } from "../services/auth.service";
 import { OtpService } from "./otp.service";
 import testEmail from "../utils/testEmail";
 
@@ -203,15 +203,17 @@ export class CustomerService {
   getAll(
     limit: number,
     offset: number,
-    arrangeType: ArrangeType
+    arrangeType: ArrangeType,
+    emailSearch: string
   ): Promise<{ status: string; total: number; totalPage: number; data: object }> {
     return new Promise(async (resolve, reject) => {
       try {
         const totalCustomerCount = await this.total();
-        const [row] = await this.db.execute("call getCustomers(?, ?, ?)", [
+        const [row] = await this.db.execute("call getCustomers(?, ?, ?, ?)", [
           limit,
           offset,
           arrangeType,
+          emailSearch,
         ]);
         let dataCustomer: ModelCustomer[] = row[0].map((item: ModelCustomer) => {
           item.createAt = convertToVietnamTime(item.createAt);
