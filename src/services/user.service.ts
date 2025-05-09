@@ -40,10 +40,10 @@ export class UserService {
     return countUser > 0 ? true : false;
   }
 
-  async getUserByEmail(email: string): Promise<any> {
+  async getAdminByEmail(email: string): Promise<any> {
     try {
       const [rows] = await this.db.execute(
-        "select email, password, role from user where email = ?",
+        "select email, full_name as fullName, password, role from user where email = ? and role = 'admin'",
         [email]
       );
       return rows[0];
@@ -52,7 +52,105 @@ export class UserService {
     }
   }
 
-  login(userLogin: LoginType): Promise<
+  async getCustomerByEmail(email: string): Promise<any> {
+    try {
+      const [rows] = await this.db.execute(
+        "select email, password, role from user where email = ? and role = 'customer'",
+        [email]
+      );
+      return rows[0];
+    } catch (err) {
+      console.error("Query error:", err);
+    }
+  }
+
+  async getDriverByEmail(email: string): Promise<any> {
+    try {
+      const [rows] = await this.db.execute(
+        "select email, password, role from user where email = ? and role = 'driver'",
+        [email]
+      );
+      return rows[0];
+    } catch (err) {
+      console.error("Query error:", err);
+    }
+  }
+
+  async getCoDriverByEmail(email: string): Promise<any> {
+    try {
+      const [rows] = await this.db.execute(
+        "select email, password, role from user where email = ? and role = 'co-driver'",
+        [email]
+      );
+      return rows[0];
+    } catch (err) {
+      console.error("Query error:", err);
+    }
+  }
+
+  loginByAdmin(userLogin: LoginType): Promise<
+    | {
+        status: string;
+        data: object;
+        access_token: string;
+        expirationTime: number;
+        refresh_token: string;
+      }
+    | {
+        status: string;
+        message: string;
+      }
+  > {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const checkPerson = await this.getAdminByEmail(userLogin.email);
+        if (!checkPerson) {
+          resolve({
+            status: "ERR",
+            message: "The admin is not defined",
+          });
+        } else {
+          const comparePass = await bcrypt.compareSync(userLogin.password, checkPerson.password);
+          if (!comparePass) {
+            resolve({
+              status: "ERR",
+              message: "Password error",
+            });
+          } else {
+            const detailAdmin = {
+              email: checkPerson?.email,
+              fullName: checkPerson?.fullName,
+              role: checkPerson?.role,
+            };
+
+            const access_token = generalAccessToken({
+              id: checkPerson?.email,
+              role: checkPerson?.role,
+            });
+
+            const expirationTime = Date.now() + 60 * 60 * 1000;
+
+            const refresh_token = generalRefreshToken({
+              id: checkPerson?.email,
+              role: checkPerson?.role,
+            });
+
+            resolve({
+              status: "OK",
+              data: detailAdmin,
+              access_token,
+              refresh_token,
+              expirationTime,
+            });
+          }
+        }
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  loginByCustomer(userLogin: LoginType): Promise<
     | {
         access_token: string;
         status: string;
@@ -66,11 +164,120 @@ export class UserService {
   > {
     return new Promise(async (resolve, reject) => {
       try {
-        const checkPerson = await this.getUserByEmail(userLogin.email);
-        if (checkPerson === null) {
+        const checkPerson = await this.getCustomerByEmail(userLogin.email);
+        console.log("checkPerson", checkPerson);
+        if (!checkPerson) {
           resolve({
             status: "ERR",
-            message: "The user is not defined",
+            message: "The customer is not defined",
+          });
+        } else {
+          const comparePass = await bcrypt.compareSync(userLogin.password, checkPerson.password);
+          if (!comparePass) {
+            resolve({
+              status: "ERR",
+              message: "Password error",
+            });
+          } else {
+            const access_token = generalAccessToken({
+              id: checkPerson?.email,
+              role: checkPerson?.role,
+            });
+
+            const expirationTime = Date.now() + 60 * 60 * 1000;
+
+            const refresh_token = generalRefreshToken({
+              id: checkPerson?.email,
+              role: checkPerson?.role,
+            });
+
+            resolve({
+              status: "OK",
+              access_token,
+              refresh_token,
+              expirationTime,
+            });
+          }
+        }
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  loginByDriver(userLogin: LoginType): Promise<
+    | {
+        access_token: string;
+        status: string;
+        expirationTime: number;
+        refresh_token: string;
+      }
+    | {
+        status: string;
+        message: string;
+      }
+  > {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const checkPerson = await this.getDriverByEmail(userLogin.email);
+        if (!checkPerson) {
+          resolve({
+            status: "ERR",
+            message: "The driver is not defined",
+          });
+        } else {
+          const comparePass = await bcrypt.compareSync(userLogin.password, checkPerson.password);
+          if (!comparePass) {
+            resolve({
+              status: "ERR",
+              message: "Password error",
+            });
+          } else {
+            const access_token = generalAccessToken({
+              id: checkPerson?.email,
+              role: checkPerson?.role,
+            });
+
+            const expirationTime = Date.now() + 60 * 60 * 1000;
+
+            const refresh_token = generalRefreshToken({
+              id: checkPerson?.email,
+              role: checkPerson?.role,
+            });
+
+            resolve({
+              status: "OK",
+              access_token,
+              refresh_token,
+              expirationTime,
+            });
+          }
+        }
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  loginByCoDriver(userLogin: LoginType): Promise<
+    | {
+        access_token: string;
+        status: string;
+        expirationTime: number;
+        refresh_token: string;
+      }
+    | {
+        status: string;
+        message: string;
+      }
+  > {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const checkPerson = await this.getCoDriverByEmail(userLogin.email);
+        if (!checkPerson) {
+          resolve({
+            status: "ERR",
+            message: "The co-driver is not defined",
           });
         } else {
           const comparePass = await bcrypt.compareSync(userLogin.password, checkPerson.password);

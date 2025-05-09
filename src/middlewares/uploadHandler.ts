@@ -10,6 +10,7 @@ import { CloudinaryAsset } from "../@types/cloudinary";
 export interface RequestFile extends Request {
   uploadedImage: CloudinaryAsset;
 }
+
 interface RequestWithFile extends Request {
   file?: Express.Multer.File & { cloudinaryFile?: CloudinaryAsset };
 }
@@ -77,61 +78,39 @@ const uploadImagesToCloudinary = async (
     if (!req.files || req.files.length === 0) {
       return next();
     }
-    let files = req.files as Express.Multer.File[];
-    const { indexIsMain } = req.body.data;
 
-    const folder = "book-bus-ticket/image/car";
-
-    const uploadImages: CloudinaryAsset[] = [];
+    const files = req.files as Express.Multer.File[];
+    const data = typeof req.body.data === "string" ? JSON.parse(req.body.data) : req.body.data;
+    const indexIsMain = Number(data?.indexIsMain ?? -1);
+    const folder = "book-bus-ticket/images/car";
     const allowedFormats = ["png", "jpg", "jpeg"];
 
-    // Upload all images
-    if (files.length > 0) {
-      await Promise.all(
-        files.map(async (file) => {
-          if (!validateFile(file.originalname, "image")) {
-            throw new Error(
-              `Invalid file format: ${file.originalname}, Only jpg, png, jpeg are allowed.`
-            );
-          }
-
-          const result: UploadApiResponse = await uploadToCloudinary(
-            file.buffer,
-            folder,
-            allowedFormats,
-            "image"
+    // Upload all images in parallel
+    const uploadImages = await Promise.all(
+      files.map(async (file, index) => {
+        if (!validateFile(file.originalname, "image")) {
+          throw new Error(
+            `Invalid file format: ${file.originalname}. Only jpg, png, jpeg are allowed.`
           );
-          uploadImages.push(result);
-        })
-      );
-    } else {
-      if (!validateFile(files[0].originalname, "image")) {
-        throw new Error(
-          `Invalid file format: ${files[0].originalname}, Only jpg, png, jpeg are allowed.`
-        );
-      }
-      const result: UploadApiResponse = await uploadToCloudinary(
-        files[0].buffer,
-        folder,
-        allowedFormats,
-        "image"
-      );
-      req.processedFile = result;
-      return next();
-    }
+        }
 
-    req.processedFiles = uploadImages.map((image, index) => {
-      const fileData: any = {
-        ...req.files[index],
-        cloudinaryImages: [image],
-      };
-      if (index === indexIsMain) {
-        fileData.isMain = 1;
-      }
-      return fileData;
-    }) as CloudinaryAsset[];
+        const result = await uploadToCloudinary(file.buffer, folder, allowedFormats, "image");
 
-    next();
+        return {
+          secure_url: result.secure_url,
+          public_id: result.public_id,
+          asset_id: result.asset_id,
+          originIndex: index,
+        };
+      })
+    );
+
+    req.processedFiles = uploadImages.map((image) => ({
+      ...image,
+      isMain: image.originIndex === indexIsMain ? 1 : 0,
+    })) as CloudinaryAsset[];
+
+    return next();
   } catch (error) {
     console.error("Upload Images error:", error);
     res.status(500).json({ message: "Error uploading images to Cloudinary" });
@@ -144,16 +123,8 @@ const uploadImageToCloudinary = async (req: RequestFile, res: Response, next: Ne
       return next();
     }
     let file = req.file as Express.Multer.File;
-    let bodyData;
-    try {
-      bodyData = JSON.parse(req.body?.data || "{}");
-    } catch (error) {
-      return next("Invalid JSON data format");
-    }
 
-    const { role } = bodyData;
-
-    const folder = getCloudinaryFolder(role);
+    const folder = "book-bus-ticket/images/avatar";
 
     const allowedFormats = ["png", "jpg", "jpeg"];
 
