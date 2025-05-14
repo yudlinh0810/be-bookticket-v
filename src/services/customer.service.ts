@@ -62,9 +62,22 @@ export class CustomerService {
         });
 
         const passwordHash = await bcrypt.hash(password, 10);
-        await otpService.insertOtp({ otp, email, passwordHash, fullName, role: "customer" });
-        await sendOtpEmail({ email, otp });
+        const insertOtp = await otpService.insertOtp({
+          otp,
+          email,
+          passwordHash,
+          fullName,
+          role: "customer",
+        });
+        if (insertOtp.data.status === "ERR") {
+          return resolve({
+            status: "ERR",
+            message: insertOtp.data.message,
+          });
+        }
 
+        await sendOtpEmail({ email, otp });
+        console.log("register");
         resolve({
           status: "OK",
           message: "Create OTP success",
@@ -94,28 +107,39 @@ export class CustomerService {
             status: "ERR",
             message: "Error verifying email",
           });
-        }
-
-        if (isValid && email === checkOtp.email) {
-          const sql = `insert into user (email, password, fullName, role) values (?, ?, ?, ?)`;
+        } else {
+          const sql = `insert into user (email, full_name, password, role) values (?, ?, ?, ?)`;
           const values = [checkOtp.email, checkOtp.fullName, checkOtp.password, "customer"];
 
           const [rows] = (await this.db.execute(sql, values)) as [ResultSetHeader];
 
           if (rows.affectedRows > 0) {
+            const detailCustomer = {
+              email: checkOtp.email,
+              fullName: checkOtp.fullName,
+              role: "customer",
+            };
+
             const access_token = generalAccessToken({ id: email, role: "customer" });
             const refresh_token = generalRefreshToken({ id: email, role: "customer" });
+            const expirationTime = Date.now() + 60 * 60 * 1000;
 
             return resolve({
               status: "OK",
               message: "Register success",
+              data: detailCustomer,
               access_token,
               refresh_token,
+              expirationTime,
             });
           }
         }
       } catch (error) {
-        reject(error);
+        console.log("error", error);
+        reject({
+          status: "ERR",
+          message: "Error verifying email",
+        });
       }
     });
   }

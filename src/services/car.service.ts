@@ -187,7 +187,6 @@ export class CarService {
     type: CarType
   ) {
     try {
-      const total = await this.totalCar();
       const sql = "call getCars(?, ?, ?, ?, ?)";
       const [rows] = await this.db.execute(sql, [
         limit,
@@ -196,10 +195,11 @@ export class CarService {
         licensePlateSearch,
         type,
       ]);
+      const total: any = rows[0][0].total;
       return {
         total,
         totalPage: Math.ceil(total / limit),
-        data: rows[0],
+        data: rows[1],
       };
     } catch (error) {
       console.log("err", error);
