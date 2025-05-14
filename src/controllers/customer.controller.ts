@@ -35,7 +35,6 @@ export class CustomerController {
         successResponse(res, 200, response);
       }
     } catch (error) {
-      console.log("Err Controller", error);
       errorResponse(res, "Controller.register", 404);
     }
   };
@@ -102,7 +101,6 @@ export class CustomerController {
       const result = await this.customerService.update(id, updateData);
       successResponse(res, 200, result);
     } catch (error) {
-      console.log("Err Controller", error);
       errorResponse(res, "ERR Controller.update", 404);
     }
   };
@@ -117,7 +115,6 @@ export class CustomerController {
       const result = await this.customerService.updateImage(id, publicId, file);
       successResponse(res, 200, result);
     } catch (error) {
-      console.log("Err Controller", error);
       errorResponse(res, "ERR Controller.updateImage", 404);
     }
   };
@@ -138,7 +135,6 @@ export class CustomerController {
       const result = await this.customerService.getAll(limit, offset, arrangeType, emailSearch);
       successResponse(res, 200, result);
     } catch (error) {
-      console.log("Err Controller", error);
       errorResponse(res, "ERR Controller.getAll", 404);
     }
   };
@@ -150,7 +146,6 @@ export class CustomerController {
       const result = await this.customerService.add(newCustomer, file);
       successResponse(res, 200, result);
     } catch (error) {
-      console.log("Err Controller", error);
       errorResponse(res, "ERR Controller.create", 404);
     }
   };

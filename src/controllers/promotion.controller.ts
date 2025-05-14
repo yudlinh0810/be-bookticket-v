@@ -16,7 +16,6 @@ class PromotionController {
       }
       successResponse(res, 200, data.data);
     } catch (error) {
-      console.log("Err Controller.fetch", error);
       errorResponse(res, "ERR Controller.fetch", 404);
     }
   };
@@ -31,7 +30,6 @@ class PromotionController {
       }
       successResponse(res, 200, data.data);
     } catch (error) {
-      console.log("Err Controller.fetch", error);
       errorResponse(res, "ERR Controller.fetch", 404);
     }
   };
@@ -67,7 +65,6 @@ class PromotionController {
 
       successResponse(res, 200, data);
     } catch (error) {
-      console.log("Err Controller.getAll", error);
       errorResponse(res, "ERR Controller.getAll", 404);
     }
   };
@@ -81,7 +78,6 @@ class PromotionController {
       }
       successResponse(res, 200, data);
     } catch (error) {
-      console.log("Err Controller.create", error);
       errorResponse(res, "ERR Controller.create", 404);
     }
   };
@@ -98,7 +94,6 @@ class PromotionController {
       }
       successResponse(res, 200, data);
     } catch (error) {
-      console.log("Err Controller.update", error);
       errorResponse(res, "ERR Controller.update", 404);
     }
   };
@@ -112,7 +107,6 @@ class PromotionController {
       }
       successResponse(res, 200, data);
     } catch (error) {
-      console.log("Err Controller.delete", error);
       errorResponse(res, "ERR Controller.delete", 404);
     }
   };

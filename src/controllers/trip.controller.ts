@@ -11,7 +11,6 @@ export class TripController {
       const result = await this.tripService.getFormData();
       successResponse(res, 200, result);
     } catch (error) {
-      console.log("err", error);
       errorResponse(res, "err getFormData", 500);
     }
   };
@@ -22,7 +21,6 @@ export class TripController {
       const result = await this.tripService.add(form, seats);
       successResponse(res, 200, result);
     } catch (error) {
-      console.log("err", error);
       errorResponse(res, "err add trip", 500);
     }
   };
@@ -43,7 +41,6 @@ export class TripController {
       const result = await this.tripService.getAll(limit, offset, arrangeType, licensePlateSearch);
       successResponse(res, 200, result);
     } catch (error) {
-      console.log("Err Controller", error);
       errorResponse(res, "ERR Controller.getAll", 404);
     }
   };
@@ -55,7 +52,6 @@ export class TripController {
       const result = await this.tripService.fetch(id);
       successResponse(res, 200, result);
     } catch (error) {
-      console.log("err", error);
       errorResponse(res, "err fetch trip", 500);
     }
   };

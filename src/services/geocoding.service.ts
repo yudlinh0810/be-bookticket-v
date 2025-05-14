@@ -16,7 +16,7 @@ class GeocodingService {
       const res = await this.geocoder.geocode(city);
       return res.length > 0 ? res[0] : null;
     } catch (error) {
-      console.log("err", error);
+      throw error;
     }
   }
 }

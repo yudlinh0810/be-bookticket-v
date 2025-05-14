@@ -34,7 +34,6 @@ export class PromotionService {
     type: "all" | "percentage" | "fixed",
     carTypes: string
   ): Promise<{ status: string; total: number; totalPage: number; data: any[] }> {
-    console.log("car-type", carTypes);
     const totalCount = await this.total();
 
     const [row] = await this.db.execute("CALL getAllPromotions(?, ?, ?, ?, ?, ?)", [
@@ -107,7 +106,6 @@ export class PromotionService {
       await conn.beginTransaction();
 
       const { code, carType, type, discountAmount, description, startDate, endDate } = promotion;
-      console.log("promotion", promotion);
 
       const sql = "CALL addPromotion(?, ?, ?, ?, ?, ?, ?)";
       const values = [code, carType, type, discountAmount, description, startDate, endDate];
@@ -117,7 +115,6 @@ export class PromotionService {
       return { status: "OK", message: "Create promotion success" };
     } catch (error: any) {
       await conn.rollback();
-      console.log("err", error);
       return {
         status: "ERR",
         message: error.message || "Create promotion failed",
@@ -141,7 +138,6 @@ export class PromotionService {
       await conn.commit();
       return { status: "OK", message: "Update promotion success" };
     } catch (error: any) {
-      console.log("err", error);
       await conn.rollback();
       return {
         status: "ERR",

@@ -57,7 +57,7 @@ export class LocationService {
         };
       }
     } catch (error) {
-      console.log("err", error);
+      throw error;
     }
   };
 }

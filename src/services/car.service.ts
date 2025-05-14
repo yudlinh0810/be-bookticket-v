@@ -60,7 +60,6 @@ export class CarService {
       ]);
 
       const insertId = rows[0][0].insertedId;
-      console.log("insertId", insertId);
       if (!insertId) {
         for (const image of filesCloudinary) {
           if (!image?.public_id) continue;
@@ -202,7 +201,6 @@ export class CarService {
         data: rows[1],
       };
     } catch (error) {
-      console.log("err", error);
       throw error;
     }
   }
@@ -229,8 +227,6 @@ export class CarService {
 
   async updateImgCar(dataImgCar: Image, fileCloudinary: CloudinaryAsset) {
     try {
-      console.log("dataImgCar", dataImgCar);
-      console.log("fileCloudinary", fileCloudinary);
       const { id, urlPublicImg } = dataImgCar;
       const { secure_url, public_id } = fileCloudinary;
 

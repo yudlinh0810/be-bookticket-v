@@ -124,7 +124,6 @@ export class DriverService {
     return new Promise(async (resolve, reject) => {
       try {
         const [rows] = await this.db.execute("call fetchDriver(?)", [id]);
-        console.log("rows", rows);
         if (rows[0].length === 0) {
           resolve({
             status: "ERR",
@@ -139,7 +138,6 @@ export class DriverService {
 
         resolve(detailDriver);
       } catch (error) {
-        console.log("Err Service.getDetail", error);
         reject(error);
       }
     });

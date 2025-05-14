@@ -34,7 +34,6 @@ export class CoDriverController {
       }
       successResponse(res, 200, data);
     } catch (error) {
-      console.log("Err Controller", error);
       errorResponse(res, "ERR Controller.update", 404);
     }
   };
@@ -52,7 +51,6 @@ export class CoDriverController {
       }
       successResponse(res, 200, data);
     } catch (error) {
-      console.log("Err Controller", error);
       errorResponse(res, "ERR Controller.updateImage", 404);
     }
   };
@@ -73,7 +71,6 @@ export class CoDriverController {
       const data = await this.coDriverService.getAll(limit, offset, arrangeType, phoneSearch);
       successResponse(res, 200, data);
     } catch (error) {
-      console.log("Err Controller", error);
       errorResponse(res, "ERR Controller.getAll", 404);
     }
   };
@@ -88,7 +85,6 @@ export class CoDriverController {
       }
       successResponse(res, 200, data);
     } catch (error) {
-      console.log("Err Controller", error);
       errorResponse(res, "ERR Controller.create", 404);
     }
   };

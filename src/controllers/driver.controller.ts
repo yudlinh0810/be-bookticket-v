@@ -43,7 +43,6 @@ export class DriverController {
 
       successResponse(res, 200, response);
     } catch (error) {
-      console.log("Err Controller", error);
       errorResponse(res, "Controller.register", 404);
     }
   };
@@ -85,7 +84,6 @@ export class DriverController {
       }
       successResponse(res, 200, response);
     } catch (error) {
-      console.log("Err Controller", error);
       errorResponse(res, "ERR Controller.update", 404);
     }
   };
@@ -102,7 +100,6 @@ export class DriverController {
       }
       successResponse(res, 200, response);
     } catch (error) {
-      console.log("Err Controller", error);
       errorResponse(res, "ERR Controller.updateImage", 404);
     }
   };
@@ -123,7 +120,6 @@ export class DriverController {
       const response = await this.driverService.getAll(limit, offset, arrangeType, phoneSearch);
       successResponse(res, 200, response);
     } catch (error) {
-      console.log("Err Controller", error);
       errorResponse(res, "ERR Controller.getAll", 500);
     }
   };
@@ -138,7 +134,6 @@ export class DriverController {
       }
       successResponse(res, 200, response);
     } catch (error) {
-      console.log("Err Controller", error);
       errorResponse(res, "ERR Controller.create", 500);
     }
   };

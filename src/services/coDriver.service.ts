@@ -56,7 +56,6 @@ export class CoDriverService {
 
         resolve(detailCoDriver);
       } catch (error) {
-        console.log("Err Service.getDetail", error);
         reject(error);
       }
     });
@@ -156,8 +155,6 @@ export class CoDriverService {
   add(newCoDriver: CoDriver, fileCloudinary: CloudinaryAsset): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log("newCoDriver", newCoDriver);
-        console.log("fileCloudinary", fileCloudinary.secure_url, fileCloudinary.public_id);
         if (!testEmail(newCoDriver.email)) {
           deleteOldFile(fileCloudinary.public_id, "image");
           return reject({

@@ -76,7 +76,6 @@ export class CarController {
       );
       successResponse(res, 200, result);
     } catch (error: any) {
-      console.log("err", error);
       errorResponse(res, error.message, 500);
     }
   };
@@ -88,7 +87,6 @@ export class CarController {
       const result = await this.carService.getCarByLicensePlate(req.params.licensePlate);
       successResponse(res, 200, result);
     } catch (error: any) {
-      console.log("err", error);
       errorResponse(res, error.message, 500);
     }
   };

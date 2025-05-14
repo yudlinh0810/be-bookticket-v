@@ -59,7 +59,6 @@ export class UserController {
         }
       }
     } catch (err) {
-      console.log(err);
       res.status(404).json({
         message: "Controller.login err",
         error: err,
@@ -118,7 +117,6 @@ export class UserController {
         }
       }
     } catch (err) {
-      console.log(err);
       res.status(404).json({
         message: "Controller.login err",
         error: err,
@@ -177,7 +175,6 @@ export class UserController {
         }
       }
     } catch (err) {
-      console.log(err);
       res.status(404).json({
         message: "Controller.login err",
         error: err,
@@ -236,7 +233,6 @@ export class UserController {
         }
       }
     } catch (err) {
-      console.log(err);
       res.status(404).json({
         message: "Controller.login err",
         error: err,
@@ -276,7 +272,6 @@ export class UserController {
         errorResponse(res, response.message, 400);
       }
     } catch (error) {
-      console.log("err refresh token", error);
       errorResponse(res, "ERR Controller.refreshToken", 404);
     }
   };
@@ -287,7 +282,6 @@ export class UserController {
       const data = await this.userService.delete(id);
       successResponse(res, data, "Delete user success");
     } catch (error) {
-      console.log("Controller", error);
       errorResponse(res, "ERR Controller.deleteUser", 404);
     }
   };
@@ -308,7 +302,6 @@ export class UserController {
       });
       successResponse(res, 200, { status: "OK", message: "Logout success" });
     } catch (error) {
-      console.log("Controller", error);
       errorResponse(res, "ERR Controller.logout", 404);
     }
   };

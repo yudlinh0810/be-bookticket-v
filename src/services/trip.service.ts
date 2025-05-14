@@ -31,7 +31,7 @@ export class TripService {
         return null;
       }
     } catch (error) {
-      console.log("err", error);
+      throw error;
     }
   };
   getAllDriver = async () => {
@@ -45,7 +45,7 @@ export class TripService {
         return null;
       }
     } catch (error) {
-      console.log("err", error);
+      throw error;
     }
   };
   getAllCoDriver = async () => {
@@ -59,7 +59,7 @@ export class TripService {
         return null;
       }
     } catch (error) {
-      console.log("err", error);
+      throw error;
     }
   };
 
@@ -92,8 +92,6 @@ export class TripService {
         startTime,
         endTime,
       } = newTrip;
-      console.log("departureTime", startTime);
-      console.log("arrivalTime", endTime);
       const valuesTrip = [
         carId,
         driverId,
@@ -105,14 +103,12 @@ export class TripService {
         "sẵn sàng",
         price,
       ];
-      console.log("newTrip", newTrip);
       const [resultTrip] = (await conn.execute(
         "call addTrip(?, ?, ?, ?, ?, ?, ?, ?, ?)",
         valuesTrip
       )) as [ResultSetHeader];
 
       const newTripId = resultTrip[0][0].tripId;
-      console.log("tripId", newTripId);
 
       if (resultTrip.affectedRows <= 0) {
         await conn.rollback();
@@ -167,7 +163,6 @@ export class TripService {
       };
     } catch (error) {
       await conn.rollback();
-      console.log("err", error);
       return {
         status: "ERR",
         message: "Unexpected server error",
@@ -203,9 +198,7 @@ export class TripService {
       } else {
         return null;
       }
-    } catch (error) {
-      console.log("err", error);
-    }
+    } catch (error) {}
   };
 
   fetch = async (id: number) => {
