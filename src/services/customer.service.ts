@@ -1,18 +1,17 @@
 import bcrypt from "bcrypt";
 import { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import otpGenerator from "otp-generator";
-import { bookBusTicketsDB } from "../config/db";
-import { sendOtpEmail } from "./email.service";
 import { CloudinaryAsset } from "../@types/cloudinary";
 import { ArrangeType, UserRegister } from "../@types/type";
+import { bookBusTicketsDB } from "../config/db";
 import { ModelCustomer } from "../models/user";
-import { convertToVietnamTime } from "../utils/convertTime";
-import deleteOldFile from "../utils/deleteOldFile.util";
-import { UserService } from "./user.service";
 import { generalAccessToken, generalRefreshToken } from "../services/auth.service";
-import { OtpService } from "./otp.service";
-import testEmail from "../utils/testEmail";
+import deleteOldFile from "../utils/deleteOldFile.util";
 import { formatDate } from "../utils/formatDate";
+import testEmail from "../utils/testEmail";
+import { sendOtpEmail } from "./email.service";
+import { OtpService } from "./otp.service";
+import { UserService } from "./user.service";
 
 const userService = new UserService(bookBusTicketsDB);
 const otpService = new OtpService();
@@ -77,7 +76,6 @@ export class CustomerService {
         }
 
         await sendOtpEmail({ email, otp });
-        console.log("register");
         resolve({
           status: "OK",
           message: "Create OTP success",
@@ -135,7 +133,6 @@ export class CustomerService {
           }
         }
       } catch (error) {
-        console.log("error", error);
         reject({
           status: "ERR",
           message: "Error verifying email",
@@ -162,7 +159,6 @@ export class CustomerService {
 
         resolve(detailCus);
       } catch (error) {
-        console.log("Err Service.getDetail", error);
         reject(error);
       }
     });
@@ -261,7 +257,6 @@ export class CustomerService {
     return new Promise(async (resolve, reject) => {
       try {
         if (!testEmail(newCustomer.email)) {
-          console.log('"Invalid email format", newCustomer.email);');
           deleteOldFile(fileCloudinary.public_id, "image");
           return reject({
             status: "ERR",

@@ -31,7 +31,7 @@ class SeatService {
         };
       }
     } catch (error) {
-      console.log("err", error);
+      throw error;
     }
   };
 }

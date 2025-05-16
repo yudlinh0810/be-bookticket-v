@@ -9,10 +9,12 @@ import coDriverRoute from "./coDriver.route";
 import adminRoute from "./admin.routes";
 import tripRoute from "./trip.routes";
 import promotionRoute from "./promotion.route";
+import socialAuth from "./socialAuth.routes";
 
 const routes = (app: express.Application): void => {
   // Cấu hình routes
   app.use("/api/user", userRouter);
+  app.use("/api/social-auth", socialAuth);
   app.use("/api/location", locationRouter);
   app.use("/api/customer", customerRouter);
   app.use("/api/bus", busRouter);
