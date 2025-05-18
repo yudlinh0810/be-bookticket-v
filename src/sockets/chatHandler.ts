@@ -17,6 +17,32 @@ const handleChatMessage = async (ws: WebSocket, message: string) => {
     console.log("Received message:", message);
 
     const userMessage = JSON.parse(message).text || message;
+    const intentPrompt = `
+Bạn là trợ lý hỗ trợ đặt vé xe.
+
+Nếu câu hỏi người dùng liên quan đến tìm chuyến đi xe (điểm đi, điểm đến, thời gian, biển số xe),
+trả về "yes". Nếu không, trả về "no".
+
+Câu hỏi: "${userMessage}"
+`;
+
+    const intentResponse = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: intentPrompt }],
+    });
+
+    const intentAnswer = (intentResponse.choices[0].message?.content || "").trim().toLowerCase();
+
+    if (intentAnswer !== "yes") {
+      ws.send(
+        JSON.stringify({
+          type: "chat",
+          message:
+            "Chào bạn, tôi chỉ có thể giúp tìm kiếm chuyến xe với điểm đi , điểm đến , biển số xe , và thời gian khởi hành thôi nha bạn. Xin lỗi bạn vì sự bất tiện này",
+        })
+      );
+      return;
+    }
 
     // Gọi GPT để trích xuất điểm đi, điểm đến, biển số xe, thời gian đi
     const extractionPrompt = `
@@ -76,7 +102,7 @@ Văn bản: "${userMessage}"
     const dataTrips = tripsResult.data;
     console.log("dataTrip", dataTrips);
 
-    if (!dataTrips) {
+    if (!dataTrips || dataTrips.length <= 0) {
       ws.send(JSON.stringify({ type: "error", message: "Không tìm thấy chuyến đi phù hợp." }));
       return;
     }
@@ -85,7 +111,7 @@ Văn bản: "${userMessage}"
       id: trip.id,
       tripName: trip.tripName,
       licensePlate: trip.licensePlate,
-      driver: trip.driverName,
+      driverName: trip.driverName,
       startTime: trip.startTime,
       endTime: trip.endTime,
       price: trip.price,

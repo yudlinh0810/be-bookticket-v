@@ -9,7 +9,9 @@ export const initChatSocket = (server: Server) => {
   wss.on("connection", (ws: WebSocket) => {
     console.log("Client connected");
 
-    ws.send(JSON.stringify({ type: "system", message: "Bạn đang chat với trợ lý AI." }));
+    ws.send(
+      JSON.stringify({ type: "system", message: "Hiện tại tôi chỉ hỗ trợ tìm chuyến đi xe." })
+    );
 
     ws.on("message", (msg) => {
       handleChatMessage(ws, msg.toString());
