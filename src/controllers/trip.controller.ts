@@ -55,4 +55,35 @@ export class TripController {
       errorResponse(res, "err fetch trip", 500);
     }
   };
+
+  search = async (req: Request, res: Response) => {
+    try {
+      const { from, to, start_time, sort, limit, offset } = req.query;
+      const allowedSortValues = [
+        "default",
+        "time-asc",
+        "time-desc",
+        "price-asc",
+        "price-desc",
+        "rating-desc",
+      ] as const;
+      type SortType = (typeof allowedSortValues)[number];
+      const sortValue: SortType = allowedSortValues.includes(sort as SortType)
+        ? (sort as SortType)
+        : "default";
+      const searchParams = {
+        from: Number(from),
+        to: Number(to),
+        start_time: start_time?.toString().trim() || "",
+        sort: sortValue,
+        limit: limit ? Number(limit) : 10,
+        offset: offset ? Number(offset) : 0,
+      };
+      const result = await this.tripService.search(searchParams);
+      successResponse(res, 200, result);
+    } catch (error) {
+      console.log("err search-trip", error);
+      errorResponse(res, "err fetch trip", 500);
+    }
+  };
 }
