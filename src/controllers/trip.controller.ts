@@ -3,6 +3,7 @@ import { bookBusTicketsDB } from "../config/db";
 import TripService from "../services/trip.service";
 import { errorResponse, successResponse } from "../utils/response.util";
 import { ArrangeType } from "../@types/type";
+import { FormBookedTripType } from "../@types/trip";
 export class TripController {
   private tripService = new TripService(bookBusTicketsDB);
 
@@ -83,7 +84,30 @@ export class TripController {
       successResponse(res, 200, result);
     } catch (error) {
       console.log("err search-trip", error);
-      errorResponse(res, "err fetch trip", 500);
+      errorResponse(res, "err search trip", 500);
+    }
+  };
+
+  getDetailTripBooked = async (req: Request, res: Response) => {
+    try {
+      const formBookedTrip: FormBookedTripType = {
+        from: Number(req.query.from),
+        to: Number(req.query.to),
+        start_day: req.query.start_day as string,
+        start_hours: req.query.start_hours as string,
+        end_day: req.query.end_day as string,
+        end_hours: req.query.end_hours as string,
+        license_plate: req.query.license_plate as string,
+      };
+      const response = await this.tripService.getDetailTripBooked(formBookedTrip);
+      if (response.status === "ERR") {
+        errorResponse(res, response.message, 404);
+      } else {
+        successResponse(res, 200, response.detailTrip);
+      }
+    } catch (error) {
+      console.log("err get detail trip booked", error);
+      errorResponse(res, "err get detail trip booked trip", 500);
     }
   };
 }

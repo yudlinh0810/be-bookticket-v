@@ -1,5 +1,5 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { SearchTripType, TripFormData } from "../@types/trip";
+import { FormBookedTripType, SearchTripType, TripFormData } from "../@types/trip";
 import { Seat } from "../models/seat";
 import { ArrangeType } from "../@types/type";
 import { TripInfo } from "../models/trip";
@@ -303,7 +303,6 @@ export class TripService {
         "call search_trips_by_filtered(?, ?, ?, ?, ?, ?)",
         value
       );
-      console.log("trips-search", rows[0]);
       const totalTrips = rows[1][0].totalCount;
       return {
         status: "OK",
@@ -313,6 +312,23 @@ export class TripService {
       };
     } catch (error) {
       throw error;
+    }
+  };
+
+  getDetailTripBooked = async (formValue: FormBookedTripType) => {
+    const { from, to, start_day, start_hours, end_day, end_hours, license_plate } = formValue;
+    const value = [from, to, start_day, start_hours, end_day, end_hours, license_plate];
+    const [rows] = await this.db.execute("call getTripByConditions(?, ?, ?, ?, ?, ?, ?)", value);
+    const detailTrip = rows[0][0];
+    if (!detailTrip) {
+      return {
+        status: "ERR",
+        message: "Not found trip",
+      };
+    } else {
+      return {
+        detailTrip,
+      };
     }
   };
 }
